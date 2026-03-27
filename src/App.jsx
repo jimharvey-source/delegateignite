@@ -33,7 +33,7 @@ const LEVEL_DESCRIPTIONS = [
   { level: 10, label: "Full ownership", desc: "This is your area of responsibility" },
 ];
 
-const FREE_LIMIT = 3;
+const FREE_LIMIT = 999;
 
 function getUsageCount() {
   try { return parseInt(localStorage.getItem("di_usage") || "0"); } catch { return 0; }
