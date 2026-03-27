@@ -99,10 +99,30 @@ function OutputBox({ title, content, badge }) {
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
   const emailIt = () => {
-    const subject = encodeURIComponent(title);
-    const body = encodeURIComponent(text);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  };
+  const subject = encodeURIComponent(`DelegateIgnite: ${title}`);
+  const body = encodeURIComponent(text);
+  const link = document.createElement("a");
+  link.href = `mailto:?subject=${subject}&body=${body}`;
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const shareIt = async () => {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `DelegateIgnite: ${title}`,
+        text: text,
+      });
+    } catch (e) {
+      emailIt();
+    }
+  } else {
+    emailIt();
+  }
+};
 
   return (
     <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
@@ -115,9 +135,9 @@ function OutputBox({ title, content, badge }) {
           <button onClick={copy} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: copied ? COLORS.greenLight : COLORS.white, color: copied ? COLORS.green : COLORS.slate, cursor: "pointer", fontWeight: 500 }}>
             {copied ? "Copied" : "Copy"}
           </button>
-          <button onClick={emailIt} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: COLORS.white, color: COLORS.slate, cursor: "pointer", fontWeight: 500 }}>
-            Email
-          </button>
+          <button onClick={shareIt} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: COLORS.white, color: COLORS.slate, cursor: "pointer", fontWeight: 500 }}>
+  Share
+</button>
         </div>
       </div>
       <textarea
