@@ -321,6 +321,7 @@ BRIEFING_NOTE:
 
 const data = await response.json();
 const text = data.choices?.[0]?.message?.content || "";
+console.log("API response text:", text);
 
       const levelMatch = text.match(/DELEGATION_LEVEL:\s*(\d+)/i);
       const adviceStart = text.search(/DELEGATION_ADVICE:/i);
