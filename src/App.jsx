@@ -311,18 +311,16 @@ BRIEFING_NOTE:
     setResult(null);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          messages: [{ role: "user", content: buildPrompt() }],
-        }),
-      });
+      const response = await fetch("/api/generate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    messages: [{ role: "user", content: buildPrompt() }],
+  }),
+});
 
-      const data = await response.json();
-      const text = data.content?.map(b => b.text || "").join("") || "";
+const data = await response.json();
+const text = data.choices?.[0]?.message?.content || "";
 
       const levelMatch = text.match(/DELEGATION_LEVEL:\s*(\d+)/i);
       const adviceStart = text.search(/DELEGATION_ADVICE:/i);
