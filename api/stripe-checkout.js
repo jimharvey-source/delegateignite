@@ -1,9 +1,9 @@
 import Stripe from "stripe";
 
 const PRICES = {
-  monthly: "price_1TG0FXPCddeRRjxQv6chiby5",
-  annual: "price_1TG0GrPCddeRRjxQX1rAHTiv",
-  lifetime: "price_1TG0I0PCddeRRjxQAI4pOYAU",
+  monthly: "price_1TG1cYPNGM6yegi0VG1IX055",
+  annual: "price_1TG1d9PNGM6yegi0UxNMzuJt",
+  lifetime: "price_1TG1djPNGM6yegi0dHJK5YEZ",
 };
 
 export default async function handler(req, res) {
