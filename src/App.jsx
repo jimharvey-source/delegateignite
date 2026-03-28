@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://fdiitxhgfytvlbtokbok.supabase.co",
+  "sb_publishable_JQMFDaTz5g-2ZlitosUTeA_C9B48-Lc"
+);
 
 const COLORS = {
   navy: "#0F2A4A",
@@ -33,7 +39,7 @@ const LEVEL_DESCRIPTIONS = [
   { level: 10, label: "Full ownership", desc: "This is your area of responsibility" },
 ];
 
-const FREE_LIMIT = 999;
+const FREE_LIMIT = 3;
 
 // ── Cadence matrix ──────────────────────────────────────────────────────────
 function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel) {
@@ -127,29 +133,22 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
   };
 }
 
-// ── ICS calendar file generator ──────────────────────────────────────────────
+// ── ICS calendar generator ──────────────────────────────────────────────────
 function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
   const freq = cadence.frequency.toLowerCase();
   let rrule = "";
   let durationMins = 30;
-
   if (freq.includes("every 2") || freq.includes("2–3 days") || freq.includes("2-3 days")) {
-    rrule = "RRULE:FREQ=DAILY;INTERVAL=2";
-    durationMins = 20;
+    rrule = "RRULE:FREQ=DAILY;INTERVAL=2"; durationMins = 20;
   } else if (freq.includes("twice")) {
-    rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO,TH";
-    durationMins = 20;
+    rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO,TH"; durationMins = 20;
   } else if (freq.includes("fortnightly")) {
-    rrule = "RRULE:FREQ=WEEKLY;INTERVAL=2";
-    durationMins = 30;
+    rrule = "RRULE:FREQ=WEEKLY;INTERVAL=2"; durationMins = 30;
   } else if (freq.includes("weekly")) {
-    rrule = "RRULE:FREQ=WEEKLY";
-    durationMins = 15;
+    rrule = "RRULE:FREQ=WEEKLY"; durationMins = 15;
   } else {
-    rrule = "RRULE:FREQ=WEEKLY";
-    durationMins = 15;
+    rrule = "RRULE:FREQ=WEEKLY"; durationMins = 15;
   }
-
   const now = new Date();
   const start = new Date(now);
   start.setDate(now.getDate() + 1);
@@ -157,61 +156,38 @@ function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
   if (day === 0) start.setDate(start.getDate() + 1);
   if (day === 6) start.setDate(start.getDate() + 2);
   start.setHours(9, 0, 0, 0);
-
   const end = new Date(start.getTime() + durationMins * 60 * 1000);
   const pad = (n) => String(n).padStart(2, "0");
-  const fmt = (d) =>
-    `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-
+  const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
   const uid = `delegateignite-${Date.now()}@themessagebusiness.com`;
   const summary = `Check-in: ${taskTitle} with ${delegateeName}`;
   const description = cadence.managerNote.replace(/\n/g, "\\n").replace(/,/g, "\\,");
-
   const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
+    "BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//The Message Business//DelegateIgnite//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `SUMMARY:${summary}`,
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
+    "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
+    `UID:${uid}`, `SUMMARY:${summary}`,
+    `DTSTART:${fmt(start)}`, `DTEND:${fmt(end)}`,
     `DESCRIPTION:${description}`,
     `ORGANIZER;CN=${managerName}:mailto:organizer@delegateignite.app`,
-    rrule ? rrule : null,
-    "STATUS:CONFIRMED",
-    "BEGIN:VALARM",
-    "TRIGGER:-PT15M",
-    "ACTION:DISPLAY",
-    "DESCRIPTION:Reminder",
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR",
+    rrule ? rrule : null, "STATUS:CONFIRMED",
+    "BEGIN:VALARM", "TRIGGER:-PT15M", "ACTION:DISPLAY", "DESCRIPTION:Reminder", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR",
   ].filter(Boolean).join("\r\n");
-
   const blob = new Blob([lines], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = `delegateignite-checkins-${delegateeName.replace(/\s+/g, "-").toLowerCase()}.ics`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-function getUsageCount() {
-  try { return parseInt(localStorage.getItem("di_usage") || "0"); } catch { return 0; }
-}
-function incrementUsage() {
-  try { localStorage.setItem("di_usage", String(getUsageCount() + 1)); } catch {}
-}
-function getSavedDelegations() {
-  try { return JSON.parse(localStorage.getItem("di_saved") || "[]"); } catch { return []; }
-}
-function saveDelegation(data) {
+// ── localStorage helpers (free users) ──────────────────────────────────────
+function getUsageCount() { try { return parseInt(localStorage.getItem("di_usage") || "0"); } catch { return 0; } }
+function incrementUsage() { try { localStorage.setItem("di_usage", String(getUsageCount() + 1)); } catch {} }
+function getSavedDelegations() { try { return JSON.parse(localStorage.getItem("di_saved") || "[]"); } catch { return []; } }
+function saveLocalDelegation(data) {
   try {
     const saved = getSavedDelegations();
     saved.unshift({ ...data, id: Date.now(), date: new Date().toLocaleDateString("en-GB") });
@@ -219,19 +195,11 @@ function saveDelegation(data) {
   } catch {}
 }
 
+// ── UI Components ───────────────────────────────────────────────────────────
 function Badge({ color, children }) {
-  const styles = {
-    blue: { bg: COLORS.blueLight, text: COLORS.blue },
-    teal: { bg: COLORS.tealLight, text: COLORS.teal },
-    amber: { bg: COLORS.amberLight, text: COLORS.amber },
-    green: { bg: COLORS.greenLight, text: COLORS.green },
-  };
+  const styles = { blue: { bg: COLORS.blueLight, text: COLORS.blue }, teal: { bg: COLORS.tealLight, text: COLORS.teal }, amber: { bg: COLORS.amberLight, text: COLORS.amber }, green: { bg: COLORS.greenLight, text: COLORS.green } };
   const s = styles[color] || styles.blue;
-  return (
-    <span style={{ background: s.bg, color: s.text, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-      {children}
-    </span>
-  );
+  return <span style={{ background: s.bg, color: s.text, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.04em", textTransform: "uppercase" }}>{children}</span>;
 }
 
 function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
@@ -248,20 +216,13 @@ function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
           </div>
         </div>
         {canSchedule && (
-          <button
-            onClick={() => generateICS({ taskTitle, delegateeName, managerName, cadence })}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: COLORS.teal, color: "#fff", border: "none", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif", whiteSpace: "nowrap" }}
-          >
+          <button onClick={() => generateICS({ taskTitle, delegateeName, managerName, cadence })} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: COLORS.teal, color: "#fff", border: "none", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif", whiteSpace: "nowrap" }}>
             <span style={{ fontSize: 14 }}>📅</span> Add to calendar
           </button>
         )}
       </div>
-      <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: "sans-serif" }}>
-        <strong>Format:</strong> {cadence.format}
-      </p>
-      <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.6, margin: 0, fontStyle: "italic", fontFamily: "sans-serif" }}>
-        {cadence.rationale}
-      </p>
+      <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: "sans-serif" }}><strong>Format:</strong> {cadence.format}</p>
+      <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.6, margin: 0, fontStyle: "italic", fontFamily: "sans-serif" }}>{cadence.rationale}</p>
     </div>
   );
 }
@@ -293,27 +254,16 @@ function OutputBox({ title, content, badge }) {
   const [copied, setCopied] = useState(false);
   const [text, setText] = useState(content);
   useEffect(() => { setText(content); }, [content]);
-
-  const copy = () => {
-    navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
-  };
+  const copy = () => { navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
   const emailIt = () => {
     const subject = encodeURIComponent(`DelegateIgnite: ${title}`);
     const body = encodeURIComponent(text);
     const link = document.createElement("a");
     link.href = `mailto:?subject=${subject}&body=${body}`;
     link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
-  const shareIt = async () => {
-    if (navigator.share) {
-      try { await navigator.share({ title: `DelegateIgnite: ${title}`, text }); }
-      catch (e) { emailIt(); }
-    } else { emailIt(); }
-  };
-
+  const shareIt = async () => { if (navigator.share) { try { await navigator.share({ title: `DelegateIgnite: ${title}`, text }); } catch { emailIt(); } } else { emailIt(); } };
   return (
     <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
       <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: COLORS.slateLight }}>
@@ -322,31 +272,11 @@ function OutputBox({ title, content, badge }) {
           {badge && <Badge color={badge.color}>{badge.label}</Badge>}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={copy} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: copied ? COLORS.greenLight : COLORS.white, color: copied ? COLORS.green : COLORS.slate, cursor: "pointer", fontWeight: 500 }}>
-            {copied ? "Copied" : "Copy"}
-          </button>
-          <button onClick={shareIt} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: COLORS.white, color: COLORS.slate, cursor: "pointer", fontWeight: 500 }}>
-            Share
-          </button>
+          <button onClick={copy} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: copied ? COLORS.greenLight : COLORS.white, color: copied ? COLORS.green : COLORS.slate, cursor: "pointer", fontWeight: 500 }}>{copied ? "Copied" : "Copy"}</button>
+          <button onClick={shareIt} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: COLORS.white, color: COLORS.slate, cursor: "pointer", fontWeight: 500 }}>Share</button>
         </div>
       </div>
-      <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
-        style={{ width: "100%", minHeight: 280, padding: "16px 20px", border: "none", outline: "none", resize: "vertical", fontSize: 13.5, lineHeight: 1.7, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white }}
-      />
-    </div>
-  );
-}
-
-function SelectField({ label, value, onChange, options, required }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>{label}{required && <span style={{ color: COLORS.red }}> *</span>}</label>
-      <select value={value} onChange={e => onChange(e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 14, color: COLORS.text, background: COLORS.white, outline: "none" }}>
-        <option value="">Select...</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <textarea value={text} onChange={e => setText(e.target.value)} style={{ width: "100%", minHeight: 280, padding: "16px 20px", border: "none", outline: "none", resize: "vertical", fontSize: 13.5, lineHeight: 1.7, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white }} />
     </div>
   );
 }
@@ -356,9 +286,7 @@ function TextField({ label, value, onChange, placeholder, multiline, required })
   return (
     <div style={{ marginBottom: 16 }}>
       <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>{label}{required && <span style={{ color: COLORS.red }}> *</span>}</label>
-      {multiline
-        ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3} style={{ ...style, resize: "vertical" }} />
-        : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={style} />}
+      {multiline ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3} style={{ ...style, resize: "vertical" }} /> : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={style} />}
     </div>
   );
 }
@@ -369,10 +297,64 @@ function ToggleGroup({ label, value, onChange, options }) {
       <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 8 }}>{label}</label>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {options.map(o => (
-          <button key={o.value} onClick={() => onChange(o.value)} style={{ padding: "7px 16px", border: `1.5px solid ${value === o.value ? COLORS.blue : COLORS.border}`, borderRadius: 8, background: value === o.value ? COLORS.blueLight : COLORS.white, color: value === o.value ? COLORS.blue : COLORS.slate, fontSize: 13, fontWeight: value === o.value ? 600 : 400, cursor: "pointer", transition: "all 0.15s" }}>
-            {o.label}
-          </button>
+          <button key={o.value} onClick={() => onChange(o.value)} style={{ padding: "7px 16px", border: `1.5px solid ${value === o.value ? COLORS.blue : COLORS.border}`, borderRadius: 8, background: value === o.value ? COLORS.blueLight : COLORS.white, color: value === o.value ? COLORS.blue : COLORS.slate, fontSize: 13, fontWeight: value === o.value ? 600 : 400, cursor: "pointer", transition: "all 0.15s" }}>{o.label}</button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function AuthModal({ onClose, onSuccess }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const sendMagicLink = async () => {
+    if (!email.trim()) { setError("Please enter your email."); return; }
+    setLoading(true);
+    setError("");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: window.location.origin },
+    });
+    if (error) { setError(error.message); setLoading(false); return; }
+    setSent(true);
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+      <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 420, width: "100%" }}>
+        {!sent ? (
+          <>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ width: 52, height: 52, background: COLORS.tealLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 22 }}>✉️</div>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>Sign in to DelegateIgnite</h2>
+              <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, fontFamily: "sans-serif", lineHeight: 1.6 }}>Enter your email and we'll send you a magic link. No password needed.</p>
+            </div>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && sendMagicLink()}
+              placeholder="your@email.com"
+              style={{ width: "100%", padding: "10px 14px", border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 14, color: COLORS.text, outline: "none", boxSizing: "border-box", fontFamily: "sans-serif", marginBottom: 12 }}
+            />
+            {error && <p style={{ fontSize: 13, color: COLORS.red, margin: "0 0 10px", fontFamily: "sans-serif" }}>{error}</p>}
+            <button onClick={sendMagicLink} disabled={loading} style={{ width: "100%", padding: "11px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "sans-serif", marginBottom: 10 }}>
+              {loading ? "Sending..." : "Send magic link"}
+            </button>
+            <button onClick={onClose} style={{ width: "100%", background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>Cancel</button>
+          </>
+        ) : (
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>📬</div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 10px", fontFamily: "sans-serif" }}>Check your email</h2>
+            <p style={{ fontSize: 14, color: COLORS.muted, lineHeight: 1.6, margin: "0 0 20px", fontFamily: "sans-serif" }}>We've sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>Close</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -381,48 +363,29 @@ function ToggleGroup({ label, value, onChange, options }) {
 function UpgradeModal({ onClose, triggered }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [checkoutError, setCheckoutError] = useState("");
-
   const plans = [
     { id: "monthly", name: "Monthly", price: "£4.99", period: "/month", desc: "Full access, cancel anytime.", highlight: false },
     { id: "annual", name: "Annual", price: "£59.99", period: "/year", desc: "Best value — two months free.", highlight: true },
     { id: "lifetime", name: "Lifetime", price: "£49.99", period: "one-off", desc: "Pay once, use forever.", highlight: false },
   ];
-
   const handleCheckout = async (planId) => {
     setLoadingPlan(planId);
     setCheckoutError("");
     try {
-      const response = await fetch("/api/stripe-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId, origin: window.location.origin }),
-      });
+      const response = await fetch("/api/stripe-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan: planId, origin: window.location.origin }) });
       const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setCheckoutError("Something went wrong. Please try again.");
-        setLoadingPlan(null);
-      }
-    } catch (e) {
-      setCheckoutError("Something went wrong. Please try again.");
-      setLoadingPlan(null);
-    }
+      if (data.url) { window.location.href = data.url; }
+      else { setCheckoutError("Something went wrong. Please try again."); setLoadingPlan(null); }
+    } catch { setCheckoutError("Something went wrong. Please try again."); setLoadingPlan(null); }
   };
-
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
       <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 520, width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ width: 52, height: 52, background: COLORS.amberLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 22 }}>★</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>
-            {triggered === "limit" ? "You've used your 3 free delegations" : "Unlock DelegateIgnite"}
-          </h2>
-          <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>
-            Unlimited delegations, cadence guidance, calendar integration, and briefing notes.
-          </p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>{triggered === "limit" ? "You've used your 3 free delegations" : "Unlock DelegateIgnite"}</h2>
+          <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>Unlimited delegations, cadence guidance, calendar integration, and briefing notes.</p>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
           {plans.map(plan => (
             <div key={plan.id} style={{ border: `${plan.highlight ? 2 : 1}px solid ${plan.highlight ? COLORS.teal : COLORS.border}`, borderRadius: 10, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: plan.highlight ? COLORS.tealLight : COLORS.white, gap: 12, flexWrap: "wrap" }}>
@@ -438,29 +401,17 @@ function UpgradeModal({ onClose, triggered }) {
                   <span style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, fontFamily: "sans-serif" }}>{plan.price}</span>
                   <span style={{ fontSize: 12, color: COLORS.muted, fontFamily: "sans-serif" }}> {plan.period}</span>
                 </div>
-                <button
-                  onClick={() => handleCheckout(plan.id)}
-                  disabled={!!loadingPlan}
-                  style={{ padding: "8px 18px", background: plan.highlight ? COLORS.teal : COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loadingPlan ? "not-allowed" : "pointer", fontFamily: "sans-serif", opacity: loadingPlan && loadingPlan !== plan.id ? 0.5 : 1, minWidth: 80 }}
-                >
+                <button onClick={() => handleCheckout(plan.id)} disabled={!!loadingPlan} style={{ padding: "8px 18px", background: plan.highlight ? COLORS.teal : COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loadingPlan ? "not-allowed" : "pointer", fontFamily: "sans-serif", opacity: loadingPlan && loadingPlan !== plan.id ? 0.5 : 1, minWidth: 80 }}>
                   {loadingPlan === plan.id ? "..." : "Select"}
                 </button>
               </div>
             </div>
           ))}
         </div>
-
-        {checkoutError && (
-          <p style={{ fontSize: 13, color: COLORS.red, textAlign: "center", margin: "0 0 12px", fontFamily: "sans-serif" }}>{checkoutError}</p>
-        )}
-
+        {checkoutError && <p style={{ fontSize: 13, color: COLORS.red, textAlign: "center", margin: "0 0 12px", fontFamily: "sans-serif" }}>{checkoutError}</p>}
         <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>
-            Secure payment by Stripe. Cancel subscriptions anytime.
-          </p>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>
-            Maybe later
-          </button>
+          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Secure payment by Stripe. Cancel subscriptions anytime.</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>Maybe later</button>
         </div>
       </div>
     </div>
@@ -480,11 +431,11 @@ function HistoryPanel({ items, onClose }) {
         ) : items.map(item => (
           <div key={item.id} style={{ border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "14px 16px", marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{item.taskTitle || "Untitled task"}</span>
-              <span style={{ fontSize: 12, color: COLORS.muted }}>{item.date}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{item.task_title || item.taskTitle || "Untitled task"}</span>
+              <span style={{ fontSize: 12, color: COLORS.muted }}>{item.date || new Date(item.created_at).toLocaleDateString("en-GB")}</span>
             </div>
-            <p style={{ fontSize: 13, color: COLORS.muted, margin: "0 0 6px" }}>{item.managerName} → {item.delegateeName}</p>
-            {item.delegationLevel && <Badge color="teal">Level {item.delegationLevel}</Badge>}
+            <p style={{ fontSize: 13, color: COLORS.muted, margin: "0 0 6px" }}>{item.managerName} → {item.delegatee_name || item.delegateeName}</p>
+            {item.delegation_level || item.delegationLevel ? <Badge color="teal">Level {item.delegation_level || item.delegationLevel}</Badge> : null}
           </div>
         ))}
       </div>
@@ -492,6 +443,7 @@ function HistoryPanel({ items, onClose }) {
   );
 }
 
+// ── Main component ──────────────────────────────────────────────────────────
 export default function DelegateIgnite() {
   const [form, setForm] = useState({
     managerName: "", delegateeName: "", taskTitle: "", taskDescription: "",
@@ -504,25 +456,53 @@ export default function DelegateIgnite() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeTrigger, setUpgradeTrigger] = useState("manual");
   const [showHistory, setShowHistory] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [usageCount, setUsageCount] = useState(getUsageCount());
   const [history, setHistory] = useState(getSavedDelegations());
-  const [isPro, setIsPro] = useState(() => {
-    try { return localStorage.getItem("di_pro") === "true"; } catch { return false; }
-  });
+  const [isPro, setIsPro] = useState(() => { try { return localStorage.getItem("di_pro") === "true"; } catch { return false; } });
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
-
-  // Goal sharpening state
+  const [user, setUser] = useState(null);
   const [goalCheck, setGoalCheck] = useState(null);
   const [sharpenedGoal, setSharpenedGoal] = useState("");
   const [goalAccepted, setGoalAccepted] = useState(false);
-
-  // Cadence state
   const [cadence, setCadence] = useState(null);
-
   const resultsRef = useRef(null);
   const f = (k) => (v) => setForm(p => ({ ...p, [k]: v }));
 
-  // Handle Stripe return URLs
+  // Auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        loadUserData(session.user.id);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        loadUserData(session.user.id);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadUserData = async (userId) => {
+    try {
+      const res = await fetch("/api/supabase-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "get_user", userId }) });
+      const data = await res.json();
+      if (data.user?.plan && data.user.plan !== "free") {
+        setIsPro(true);
+        try { localStorage.setItem("di_pro", "true"); } catch {}
+      }
+      const histRes = await fetch("/api/supabase-auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "get_delegations", userId }) });
+      const histData = await histRes.json();
+      if (histData.delegations) setHistory(histData.delegations);
+    } catch {}
+  };
+
+  // Stripe return URL handling
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("session_id")) {
@@ -532,18 +512,14 @@ export default function DelegateIgnite() {
       window.history.replaceState({}, "", "/");
       setTimeout(() => setShowSuccessBanner(false), 6000);
     }
-    if (params.get("cancelled")) {
-      window.history.replaceState({}, "", "/");
-    }
+    if (params.get("cancelled")) window.history.replaceState({}, "", "/");
   }, []);
 
-  // Recompute cadence
+  // Cadence
   useEffect(() => {
     if (form.complexity && form.importance && form.skillLevel && form.confidenceLevel) {
       setCadence(getCadenceGuidance(form.complexity, form.importance, form.skillLevel, form.confidenceLevel));
-    } else {
-      setCadence(null);
-    }
+    } else { setCadence(null); }
   }, [form.complexity, form.importance, form.skillLevel, form.confidenceLevel]);
 
   const validate = () => {
@@ -643,43 +619,32 @@ YOUR RESPONSE MUST USE EXACTLY THIS FORMAT — NO DEVIATIONS:
 DELEGATION_LEVEL: [number only, e.g. 4]
 
 DELEGATION_ADVICE:
-[Write detailed, practical guidance for ${form.managerName}. Use the 9-step delegation process as the structure. Include: why this delegation level is appropriate; communication tips specific to this delegatee; likely risks or watch-outs; the check-in cadence from the CADENCE GUIDANCE above woven naturally into the advice — include the specific frequency, format and the framing of why it benefits the delegatee, not just the manager; coaching approach; how much freedom vs control to give. Be specific and concrete. Minimum 400 words.]
+[Write detailed, practical guidance for ${form.managerName}. Use the 9-step delegation process as the structure. Include: why this delegation level is appropriate; communication tips specific to this delegatee; likely risks or watch-outs; the check-in cadence from the CADENCE GUIDANCE above woven naturally into the advice. Be specific and concrete. Minimum 400 words.]
 
 BRIEFING_NOTE:
-[Write a professional briefing note addressed directly to ${form.delegateeName}. Use first-person manager voice (e.g. "I'd like you to...", "Please come back to me by...", "You have freedom to..."). Include: clear task explanation; expected outcomes; timescales and review points; level of autonomy; available support; the check-in arrangement from the CADENCE GUIDANCE above — use the delegateeNote wording as the basis, adapted naturally into the note; success criteria. Make it warm, clear, and confidence-building. Minimum 300 words.]
+[Write a professional briefing note addressed directly to ${form.delegateeName}. Use first-person manager voice. Include: clear task explanation; expected outcomes; timescales and review points; level of autonomy; available support; the check-in arrangement from the CADENCE GUIDANCE above. Make it warm, clear, and confidence-building. Minimum 300 words.]
 `;
   };
 
   const generate = async () => {
     const err = validate();
     if (err) { setError(err); return; }
-    if (!isPro && usageCount >= FREE_LIMIT) {
-      setUpgradeTrigger("limit");
-      setShowUpgrade(true);
-      return;
-    }
+    if (!isPro && usageCount >= FREE_LIMIT) { setUpgradeTrigger("limit"); setShowUpgrade(true); return; }
     setError("");
 
     if (!goalAccepted) {
       setLoading(true);
       setGoalCheck(null);
       try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: [{ role: "user", content: buildCheckPrompt() }] }),
-        });
+        const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: buildCheckPrompt() }] }) });
         const data = await response.json();
         const text = data.choices?.[0]?.message?.content || "";
-
         const statusMatch = text.match(/STATUS:\s*(PASS|FAIL)/i);
         const reasonMatch = text.match(/REASON:\s*(.+)/i);
         const sharpenedMatch = text.match(/SHARPENED:\s*([\s\S]+)/i);
-
         const status = statusMatch?.[1]?.toUpperCase() || "PASS";
         const reason = reasonMatch?.[1]?.trim() || "";
         const sharpened = sharpenedMatch?.[1]?.trim() || form.taskDescription;
-
         if (status === "PASS") {
           setSharpenedGoal(form.taskDescription);
           setGoalAccepted(true);
@@ -689,13 +654,9 @@ BRIEFING_NOTE:
           setSharpenedGoal(sharpened);
           setLoading(false);
         }
-      } catch (e) {
-        setError("Something went wrong. Please try again.");
-        setLoading(false);
-      }
+      } catch { setError("Something went wrong. Please try again."); setLoading(false); }
       return;
     }
-
     await runGenerate(sharpenedGoal || form.taskDescription);
   };
 
@@ -703,31 +664,22 @@ BRIEFING_NOTE:
     setLoading(true);
     setResult(null);
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt(descriptionToUse) }] }),
-      });
+      const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt(descriptionToUse) }] }) });
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content || "";
-
       const levelMatch = text.match(/DELEGATION_LEVEL:\s*(\d+)/i);
       const adviceStart = text.search(/DELEGATION_ADVICE:/i);
       const briefingStart = text.search(/BRIEFING_NOTE:/i);
       const adviceTagLen = "DELEGATION_ADVICE:".length;
       const briefingTagLen = "BRIEFING_NOTE:".length;
-
       let delegationAdvice = "";
       let briefingNote = "";
-
       if (adviceStart !== -1 && briefingStart !== -1 && briefingStart > adviceStart) {
         delegationAdvice = text.slice(adviceStart + adviceTagLen, briefingStart).trim();
         briefingNote = text.slice(briefingStart + briefingTagLen).trim();
       } else if (adviceStart !== -1) {
         delegationAdvice = text.slice(adviceStart + adviceTagLen).trim();
-      } else {
-        delegationAdvice = text.trim();
-      }
+      } else { delegationAdvice = text.trim(); }
 
       const parsed = {
         delegationLevel: levelMatch?.[1] || "5",
@@ -740,46 +692,44 @@ BRIEFING_NOTE:
       };
 
       setResult(parsed);
-      if (!isPro) {
-        incrementUsage();
-        setUsageCount(getUsageCount());
-      }
+
+      if (!isPro) { incrementUsage(); setUsageCount(getUsageCount()); }
 
       if (form.saveLocally) {
-        saveDelegation(parsed);
-        setHistory(getSavedDelegations());
+        if (user && isPro) {
+          // Save to Supabase
+          await fetch("/api/supabase-auth", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "save_delegation", userId: user.id,
+              delegation: { task_title: parsed.taskTitle, delegatee_name: parsed.delegateeName, delegation_level: parsed.delegationLevel, delegation_advice: parsed.delegationAdvice, briefing_note: parsed.briefingNote, cadence: parsed.cadence }
+            })
+          });
+          await loadUserData(user.id);
+        } else {
+          saveLocalDelegation(parsed);
+          setHistory(getSavedDelegations());
+        }
       }
 
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-
-    } catch (e) {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Something went wrong. Please try again."); }
+    finally { setLoading(false); }
   };
 
-  const resetAll = () => {
-    setGoalCheck(null);
-    setSharpenedGoal("");
-    setGoalAccepted(false);
-    setResult(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
+  const resetAll = () => { setGoalCheck(null); setSharpenedGoal(""); setGoalAccepted(false); setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const signOut = async () => { await supabase.auth.signOut(); setUser(null); setIsPro(false); try { localStorage.removeItem("di_pro"); } catch {} };
   const remaining = isPro ? null : Math.max(0, FREE_LIMIT - usageCount);
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: "#F8FAFC", minHeight: "100vh" }}>
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} triggered={upgradeTrigger} />}
       {showHistory && <HistoryPanel items={history} onClose={() => setShowHistory(false)} />}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
 
-      {/* Success banner */}
       {showSuccessBanner && (
         <div style={{ background: COLORS.green, padding: "12px 24px", textAlign: "center" }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "sans-serif" }}>
-            Payment successful — you now have unlimited access. Welcome to DelegateIgnite Pro.
-          </p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "sans-serif" }}>Payment successful — you now have unlimited access. Welcome to DelegateIgnite Pro.</p>
         </div>
       )}
 
@@ -790,22 +740,21 @@ BRIEFING_NOTE:
             <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>DelegateIgnite</span>
             <Badge color={isPro ? "green" : "amber"}>{isPro ? "Pro" : "Beta"}</Badge>
           </div>
-          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 13, cursor: "pointer", padding: 0 }}>
-              History
-            </button>
-            {!isPro && (
-              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>
-                {remaining} free {remaining === 1 ? "use" : "uses"} left
-              </div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: "sans-serif" }}>History</button>
+            {user ? (
+              <>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "sans-serif" }}>{user.email}</span>
+                <button onClick={signOut} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign out</button>
+              </>
+            ) : (
+              <button onClick={() => setShowAuth(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign in</button>
             )}
             {!isPro && (
-              <button
-                onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }}
-                style={{ background: COLORS.teal, border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "sans-serif", fontWeight: 600, cursor: "pointer" }}
-              >
-                Upgrade
-              </button>
+              <>
+                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>{remaining} free {remaining === 1 ? "use" : "uses"} left</div>
+                <button onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }} style={{ background: COLORS.teal, border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "sans-serif", fontWeight: 600, cursor: "pointer" }}>Upgrade</button>
+              </>
             )}
           </div>
         </div>
@@ -814,12 +763,8 @@ BRIEFING_NOTE:
       {/* Hero */}
       <div style={{ background: COLORS.navy, borderBottom: `3px solid ${COLORS.teal}`, paddingBottom: 32 }}>
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "28px 24px 0" }}>
-          <h1 style={{ fontSize: 30, fontWeight: 700, color: "#fff", margin: "0 0 10px", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-            Delegate better.<br />Every time.
-          </h1>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>
-            Match the task to the person. Get a practical delegation guide and a ready-to-use briefing note in seconds.
-          </p>
+          <h1 style={{ fontSize: 30, fontWeight: 700, color: "#fff", margin: "0 0 10px", lineHeight: 1.25, letterSpacing: "-0.02em" }}>Delegate better.<br />Every time.</h1>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>Match the task to the person. Get a practical delegation guide and a ready-to-use briefing note in seconds.</p>
         </div>
       </div>
 
@@ -828,15 +773,11 @@ BRIEFING_NOTE:
 
         {/* Form card */}
         <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "28px 28px", marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: "0 0 22px", fontFamily: "sans-serif", borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 14 }}>
-            The delegation
-          </h2>
-
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: "0 0 22px", fontFamily: "sans-serif", borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 14 }}>The delegation</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
             <TextField label="Manager name" value={form.managerName} onChange={f("managerName")} placeholder="Your name" required />
             <TextField label="Delegatee name" value={form.delegateeName} onChange={f("delegateeName")} placeholder="Their name" required />
           </div>
-
           <TextField label="Task title" value={form.taskTitle} onChange={f("taskTitle")} placeholder="e.g. Lead the Q3 client review" required />
           <TextField label="Task description" value={form.taskDescription} onChange={f("taskDescription")} placeholder="What does this task involve? What context is relevant?" multiline required />
           <TextField label="Specific outcomes required" value={form.outcomes} onChange={f("outcomes")} placeholder="What does success look like?" multiline />
@@ -873,11 +814,7 @@ BRIEFING_NOTE:
             {error && <p style={{ fontSize: 13, color: COLORS.red, margin: 0, fontFamily: "sans-serif" }}>{error}</p>}
           </div>
 
-          <button
-            onClick={generate}
-            disabled={loading}
-            style={{ width: "100%", marginTop: 16, padding: "14px", background: loading ? COLORS.slate : COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "sans-serif", letterSpacing: "0.01em", transition: "background 0.2s" }}
-          >
+          <button onClick={generate} disabled={loading} style={{ width: "100%", marginTop: 16, padding: "14px", background: loading ? COLORS.slate : COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "sans-serif", letterSpacing: "0.01em", transition: "background 0.2s" }}>
             {loading ? "Generating your delegation guide..." : "Generate delegation guide"}
           </button>
 
@@ -889,7 +826,7 @@ BRIEFING_NOTE:
           )}
         </div>
 
-        {/* Goal sharpening panel */}
+        {/* Goal sharpening */}
         {goalCheck && !goalAccepted && (
           <div style={{ background: COLORS.amberLight, border: `1px solid ${COLORS.amber}`, borderRadius: 14, padding: "24px 28px", marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
@@ -901,26 +838,11 @@ BRIEFING_NOTE:
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6, fontFamily: "sans-serif" }}>Suggested rewrite — edit if needed:</label>
-              <textarea
-                value={sharpenedGoal}
-                onChange={e => setSharpenedGoal(e.target.value)}
-                rows={4}
-                style={{ width: "100%", padding: "10px 14px", border: `1.5px solid ${COLORS.amber}`, borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white, outline: "none", resize: "vertical" }}
-              />
+              <textarea value={sharpenedGoal} onChange={e => setSharpenedGoal(e.target.value)} rows={4} style={{ width: "100%", padding: "10px 14px", border: `1.5px solid ${COLORS.amber}`, borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white, outline: "none", resize: "vertical" }} />
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button
-                onClick={() => { setGoalAccepted(true); runGenerate(sharpenedGoal); }}
-                style={{ padding: "10px 20px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif" }}
-              >
-                Use this — generate guide
-              </button>
-              <button
-                onClick={() => { setGoalCheck(null); setGoalAccepted(true); setSharpenedGoal(form.taskDescription); runGenerate(form.taskDescription); }}
-                style={{ padding: "10px 20px", background: COLORS.white, color: COLORS.navy, border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "sans-serif" }}
-              >
-                Keep my original wording
-              </button>
+              <button onClick={() => { setGoalAccepted(true); runGenerate(sharpenedGoal); }} style={{ padding: "10px 20px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif" }}>Use this — generate guide</button>
+              <button onClick={() => { setGoalCheck(null); setGoalAccepted(true); setSharpenedGoal(form.taskDescription); runGenerate(form.taskDescription); }} style={{ padding: "10px 20px", background: COLORS.white, color: COLORS.navy, border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "sans-serif" }}>Keep my original wording</button>
             </div>
           </div>
         )}
@@ -932,26 +854,13 @@ BRIEFING_NOTE:
               <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0, fontFamily: "sans-serif" }}>Your delegation guide</h2>
               <Badge color="green">Ready to use</Badge>
             </div>
-
             <LevelMeter level={result.delegationLevel} />
-
-            {result.cadence && (
-              <CadenceCard
-                cadence={result.cadence}
-                taskTitle={result.taskTitle}
-                delegateeName={result.delegateeName}
-                managerName={result.managerName}
-              />
-            )}
-
+            {result.cadence && <CadenceCard cadence={result.cadence} taskTitle={result.taskTitle} delegateeName={result.delegateeName} managerName={result.managerName} />}
             <OutputBox title="Advice for the delegator" content={result.delegationAdvice} badge={{ color: "blue", label: "Manager only" }} />
             <OutputBox title={`Briefing note for ${result.delegateeName}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} />
-
             <div style={{ background: COLORS.slateLight, borderRadius: 10, padding: "14px 18px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
               <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
-              <button onClick={resetAll} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 8, color: COLORS.navy, cursor: "pointer", fontFamily: "sans-serif", fontWeight: 500 }}>
-                New delegation
-              </button>
+              <button onClick={resetAll} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 8, color: COLORS.navy, cursor: "pointer", fontFamily: "sans-serif", fontWeight: 500 }}>New delegation</button>
             </div>
           </div>
         )}
@@ -961,11 +870,7 @@ BRIEFING_NOTE:
           <div style={{ marginTop: 8 }}>
             <h3 style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 16px", fontFamily: "sans-serif" }}>How it works</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-              {[
-                { n: "1", title: "Describe the task", desc: "Tell us what you're delegating and to whom." },
-                { n: "2", title: "Profile the person", desc: "Skill level and confidence shape the right approach." },
-                { n: "3", title: "Get your guide", desc: "Receive a delegation plan and a ready briefing note." },
-              ].map(s => (
+              {[{ n: "1", title: "Describe the task", desc: "Tell us what you're delegating and to whom." }, { n: "2", title: "Profile the person", desc: "Skill level and confidence shape the right approach." }, { n: "3", title: "Get your guide", desc: "Receive a delegation plan and a ready briefing note." }].map(s => (
                 <div key={s.n} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "16px 18px" }}>
                   <div style={{ width: 28, height: 28, background: COLORS.navy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10, fontFamily: "sans-serif" }}>{s.n}</div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>{s.title}</p>
