@@ -13,11 +13,10 @@ export default async function handler(req, res) {
 
   if (!secretKey) {
     console.error("STRIPE_SECRET_KEY is not set");
-    return res.status(500).json({ error: "Payment configuration error. Please contact support." });
+    return res.status(500).json({ error: "Payment configuration error." });
   }
 
   const stripe = new Stripe(secretKey);
-
   const { plan, origin } = req.body;
 
   if (!plan || !PRICES[plan]) {
@@ -26,7 +25,6 @@ export default async function handler(req, res) {
 
   try {
     const isSubscription = plan === "monthly" || plan === "annual";
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{ price: PRICES[plan], quantity: 1 }],
@@ -35,7 +33,6 @@ export default async function handler(req, res) {
       cancel_url: `${origin}/?cancelled=true`,
       billing_address_collection: "auto",
     });
-
     res.status(200).json({ url: session.url });
   } catch (err) {
     console.error("Stripe error:", err.message);
