@@ -1,7 +1,5 @@
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 const PRICES = {
   monthly: "price_1TG0FXPCddeRRjxQv6chiby5",
   annual: "price_1TG0GrPCddeRRjxQX1rAHTiv",
@@ -10,6 +8,15 @@ const PRICES = {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
+
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (!secretKey) {
+    console.error("STRIPE_SECRET_KEY is not set");
+    return res.status(500).json({ error: "Payment configuration error. Please contact support." });
+  }
+
+  const stripe = new Stripe(secretKey);
 
   const { plan, origin } = req.body;
 
@@ -20,16 +27,15 @@ export default async function handler(req, res) {
   try {
     const isSubscription = plan === "monthly" || plan === "annual";
 
-    const sessionParams = {
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{ price: PRICES[plan], quantity: 1 }],
       mode: isSubscription ? "subscription" : "payment",
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
       cancel_url: `${origin}/?cancelled=true`,
       billing_address_collection: "auto",
-    };
+    });
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
     res.status(200).json({ url: session.url });
   } catch (err) {
     console.error("Stripe error:", err.message);
