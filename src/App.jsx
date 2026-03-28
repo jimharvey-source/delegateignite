@@ -36,8 +36,6 @@ const LEVEL_DESCRIPTIONS = [
 const FREE_LIMIT = 999;
 
 // ── Cadence matrix ──────────────────────────────────────────────────────────
-// Returns { frequency, format, rationale, managerNote, delegateeNote }
-// based on complexity, importance, skillLevel, confidenceLevel
 function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel) {
   const highTask = (complexity === "Complex" || importance === "High");
   const medTask = (complexity === "Moderate" || importance === "Medium");
@@ -48,7 +46,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
   const medConf = confidenceLevel === "Medium";
   const highConf = confidenceLevel === "High";
 
-  // High task stakes regardless of person
   if (highTask && highSkill && highConf) {
     return {
       frequency: "Weekly structured check-in",
@@ -58,7 +55,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "I'd like us to have a brief weekly check-in — 15 minutes, with a short written update from you beforehand. This isn't about monitoring your progress. It's because this task matters and I want to stay close to it with you. Please cover: where you're up to, anything that's slowing you down, and anything you'd value my input on.",
     };
   }
-
   if (highTask && highSkill && medConf) {
     return {
       frequency: "Weekly check-in with mid-week availability",
@@ -68,7 +64,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "Let's keep a weekly check-in in the diary. I'm also available between sessions — if something comes up that you'd like to talk through, don't wait. This is important work and I'd rather hear about a concern early than late.",
     };
   }
-
   if (highTask && (medSkill || lowSkill) && highConf) {
     return {
       frequency: "Twice weekly",
@@ -78,7 +73,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "Given the complexity here, I'd like us to check in twice a week — short sessions, around 20 minutes. I want to hear about the decisions you're facing, not just the progress you've made. Come with options, not just questions, and we'll work through them together.",
     };
   }
-
   if (highTask && (medSkill || lowSkill) && (medConf || lowConf)) {
     return {
       frequency: "Every 2–3 days",
@@ -88,8 +82,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "I'd like us to check in every couple of days on this one. It's a significant task and I want to make sure you have everything you need as it unfolds. Please keep a brief log of what you're working on and any questions as they arise — bring that to each session. I'm invested in you getting this right.",
     };
   }
-
-  // Medium task stakes
   if (medTask && highSkill && highConf) {
     return {
       frequency: "Fortnightly review",
@@ -99,7 +91,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "I'd like a brief written update halfway through — just to keep me in the picture. Then let's talk when it's done. I'm not hovering on this one; I trust your judgement. If anything significant shifts, just let me know.",
     };
   }
-
   if (medTask && (medSkill || highSkill) && (medConf || highConf)) {
     return {
       frequency: "Weekly light-touch check-in",
@@ -109,7 +100,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "Let's keep a light weekly check-in — a short message or a quick conversation, whichever works better for you. I want to be available if you need me, but I'm not going to be watching over your shoulder. If you hit something you'd like to talk through, just come and find me.",
     };
   }
-
   if (medTask && (lowSkill || lowConf)) {
     return {
       frequency: "Weekly structured check-in",
@@ -119,8 +109,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "Let's meet weekly to review progress and agree next steps. Come with an update and any questions — I'll come with support and any input you need. These sessions are there to help you, not to check up on you. The more honest you are about what you're finding difficult, the more useful I can be.",
     };
   }
-
-  // Low task stakes
   if (!highTask && !medTask) {
     return {
       frequency: "At completion",
@@ -130,8 +118,6 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       delegateeNote: "No need to check in while you're working on this — just let me know when it's done and give me a brief summary of what happened. If anything comes up that you think I should know about, feel free to flag it, but otherwise it's yours to get on with.",
     };
   }
-
-  // Fallback: moderate task, mixed signals
   return {
     frequency: "Weekly check-in",
     format: "Short conversation or written update",
@@ -141,26 +127,8 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
   };
 }
 
-function getUsageCount() {
-  try { return parseInt(localStorage.getItem("di_usage") || "0"); } catch { return 0; }
-}
-function incrementUsage() {
-  try { localStorage.setItem("di_usage", String(getUsageCount() + 1)); } catch {}
-}
-function getSavedDelegations() {
-  try { return JSON.parse(localStorage.getItem("di_saved") || "[]"); } catch { return []; }
-}
-function saveDelegation(data) {
-  try {
-    const saved = getSavedDelegations();
-    saved.unshift({ ...data, id: Date.now(), date: new Date().toLocaleDateString("en-GB") });
-    localStorage.setItem("di_saved", JSON.stringify(saved.slice(0, 20)));
-  } catch {}
-}
-
-// ── ICS calendar file generator ─────────────────────────────────────────────
+// ── ICS calendar file generator ──────────────────────────────────────────────
 function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
-  // Map cadence frequency to RRULE and duration
   const freq = cadence.frequency.toLowerCase();
   let rrule = "";
   let durationMins = 30;
@@ -177,27 +145,20 @@ function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
   } else if (freq.includes("weekly")) {
     rrule = "RRULE:FREQ=WEEKLY";
     durationMins = 15;
-  } else if (freq.includes("completion") || freq.includes("at completion")) {
-    // No recurrence — single event at deadline reminder
-    rrule = "";
-    durationMins = 30;
   } else {
     rrule = "RRULE:FREQ=WEEKLY";
     durationMins = 15;
   }
 
-  // Start: next working day at 09:00 local — expressed as floating time in ICS
   const now = new Date();
   const start = new Date(now);
   start.setDate(now.getDate() + 1);
-  // Skip to Monday if landing on weekend
   const day = start.getDay();
   if (day === 0) start.setDate(start.getDate() + 1);
   if (day === 6) start.setDate(start.getDate() + 2);
   start.setHours(9, 0, 0, 0);
 
   const end = new Date(start.getTime() + durationMins * 60 * 1000);
-
   const pad = (n) => String(n).padStart(2, "0");
   const fmt = (d) =>
     `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
@@ -239,6 +200,23 @@ function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function getUsageCount() {
+  try { return parseInt(localStorage.getItem("di_usage") || "0"); } catch { return 0; }
+}
+function incrementUsage() {
+  try { localStorage.setItem("di_usage", String(getUsageCount() + 1)); } catch {}
+}
+function getSavedDelegations() {
+  try { return JSON.parse(localStorage.getItem("di_saved") || "[]"); } catch { return []; }
+}
+function saveDelegation(data) {
+  try {
+    const saved = getSavedDelegations();
+    saved.unshift({ ...data, id: Date.now(), date: new Date().toLocaleDateString("en-GB") });
+    localStorage.setItem("di_saved", JSON.stringify(saved.slice(0, 20)));
+  } catch {}
 }
 
 function Badge({ color, children }) {
@@ -319,7 +297,6 @@ function OutputBox({ title, content, badge }) {
   const copy = () => {
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
-
   const emailIt = () => {
     const subject = encodeURIComponent(`DelegateIgnite: ${title}`);
     const body = encodeURIComponent(text);
@@ -330,15 +307,11 @@ function OutputBox({ title, content, badge }) {
     link.click();
     document.body.removeChild(link);
   };
-
   const shareIt = async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({ title: `DelegateIgnite: ${title}`, text });
-      } catch (e) { emailIt(); }
-    } else {
-      emailIt();
-    }
+      try { await navigator.share({ title: `DelegateIgnite: ${title}`, text }); }
+      catch (e) { emailIt(); }
+    } else { emailIt(); }
   };
 
   return (
@@ -405,26 +378,90 @@ function ToggleGroup({ label, value, onChange, options }) {
   );
 }
 
-function UpgradeModal({ onClose }) {
+function UpgradeModal({ onClose, triggered }) {
+  const [loadingPlan, setLoadingPlan] = useState(null);
+  const [checkoutError, setCheckoutError] = useState("");
+
+  const plans = [
+    { id: "monthly", name: "Monthly", price: "£4.99", period: "/month", desc: "Full access, cancel anytime.", highlight: false },
+    { id: "annual", name: "Annual", price: "£59.99", period: "/year", desc: "Best value — two months free.", highlight: true },
+    { id: "lifetime", name: "Lifetime", price: "£49.99", period: "one-off", desc: "Pay once, use forever.", highlight: false },
+  ];
+
+  const handleCheckout = async (planId) => {
+    setLoadingPlan(planId);
+    setCheckoutError("");
+    try {
+      const response = await fetch("/api/stripe-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, origin: window.location.origin }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setCheckoutError("Something went wrong. Please try again.");
+        setLoadingPlan(null);
+      }
+    } catch (e) {
+      setCheckoutError("Something went wrong. Please try again.");
+      setLoadingPlan(null);
+    }
+  };
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-      <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 420, width: "100%", textAlign: "center" }}>
-        <div style={{ width: 56, height: 56, background: COLORS.amberLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 24 }}>★</div>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 10px" }}>Free limit reached</h2>
-        <p style={{ fontSize: 15, color: COLORS.muted, lineHeight: 1.6, margin: "0 0 24px" }}>You've used your 3 free delegations. Upgrade to Pro for unlimited use, saved history, and full export options.</p>
-        <div style={{ background: COLORS.slateLight, borderRadius: 10, padding: "16px 20px", marginBottom: 24, textAlign: "left" }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, margin: "0 0 8px" }}>Pro — £9/month or £79/year</p>
-          <ul style={{ fontSize: 13, color: COLORS.muted, margin: 0, paddingLeft: 18, lineHeight: 2 }}>
-            <li>Unlimited delegations</li>
-            <li>Save and track history</li>
-            <li>Email and export outputs</li>
-            <li>Cancel anytime</li>
-          </ul>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+      <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 520, width: "100%" }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ width: 52, height: 52, background: COLORS.amberLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 22 }}>★</div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>
+            {triggered === "limit" ? "You've used your 3 free delegations" : "Unlock DelegateIgnite"}
+          </h2>
+          <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>
+            Unlimited delegations, cadence guidance, calendar integration, and briefing notes.
+          </p>
         </div>
-        <button style={{ width: "100%", padding: "12px", background: COLORS.blue, color: "#fff", border: "none", borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
-          Upgrade to Pro
-        </button>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4 }}>Maybe later</button>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+          {plans.map(plan => (
+            <div key={plan.id} style={{ border: `${plan.highlight ? 2 : 1}px solid ${plan.highlight ? COLORS.teal : COLORS.border}`, borderRadius: 10, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: plan.highlight ? COLORS.tealLight : COLORS.white, gap: 12, flexWrap: "wrap" }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, fontFamily: "sans-serif" }}>{plan.name}</span>
+                  {plan.highlight && <Badge color="teal">Most popular</Badge>}
+                </div>
+                <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>{plan.desc}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, fontFamily: "sans-serif" }}>{plan.price}</span>
+                  <span style={{ fontSize: 12, color: COLORS.muted, fontFamily: "sans-serif" }}> {plan.period}</span>
+                </div>
+                <button
+                  onClick={() => handleCheckout(plan.id)}
+                  disabled={!!loadingPlan}
+                  style={{ padding: "8px 18px", background: plan.highlight ? COLORS.teal : COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loadingPlan ? "not-allowed" : "pointer", fontFamily: "sans-serif", opacity: loadingPlan && loadingPlan !== plan.id ? 0.5 : 1, minWidth: 80 }}
+                >
+                  {loadingPlan === plan.id ? "..." : "Select"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {checkoutError && (
+          <p style={{ fontSize: 13, color: COLORS.red, textAlign: "center", margin: "0 0 12px", fontFamily: "sans-serif" }}>{checkoutError}</p>
+        )}
+
+        <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>
+            Secure payment by Stripe. Cancel subscriptions anytime.
+          </p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>
+            Maybe later
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -465,23 +502,42 @@ export default function DelegateIgnite() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeTrigger, setUpgradeTrigger] = useState("manual");
   const [showHistory, setShowHistory] = useState(false);
   const [usageCount, setUsageCount] = useState(getUsageCount());
   const [history, setHistory] = useState(getSavedDelegations());
+  const [isPro, setIsPro] = useState(() => {
+    try { return localStorage.getItem("di_pro") === "true"; } catch { return false; }
+  });
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
   // Goal sharpening state
   const [goalCheck, setGoalCheck] = useState(null);
   const [sharpenedGoal, setSharpenedGoal] = useState("");
   const [goalAccepted, setGoalAccepted] = useState(false);
 
-  // Cadence state — computed client-side when all four inputs are present
+  // Cadence state
   const [cadence, setCadence] = useState(null);
 
   const resultsRef = useRef(null);
-
   const f = (k) => (v) => setForm(p => ({ ...p, [k]: v }));
 
-  // Recompute cadence whenever the relevant form fields change
+  // Handle Stripe return URLs
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("session_id")) {
+      try { localStorage.setItem("di_pro", "true"); } catch {}
+      setIsPro(true);
+      setShowSuccessBanner(true);
+      window.history.replaceState({}, "", "/");
+      setTimeout(() => setShowSuccessBanner(false), 6000);
+    }
+    if (params.get("cancelled")) {
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
+
+  // Recompute cadence
   useEffect(() => {
     if (form.complexity && form.importance && form.skillLevel && form.confidenceLevel) {
       setCadence(getCadenceGuidance(form.complexity, form.importance, form.skillLevel, form.confidenceLevel));
@@ -597,10 +653,13 @@ BRIEFING_NOTE:
   const generate = async () => {
     const err = validate();
     if (err) { setError(err); return; }
-    if (usageCount >= FREE_LIMIT) { setShowUpgrade(true); return; }
+    if (!isPro && usageCount >= FREE_LIMIT) {
+      setUpgradeTrigger("limit");
+      setShowUpgrade(true);
+      return;
+    }
     setError("");
 
-    // If goal hasn't been checked yet, run the check first
     if (!goalAccepted) {
       setLoading(true);
       setGoalCheck(null);
@@ -608,9 +667,7 @@ BRIEFING_NOTE:
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: buildCheckPrompt() }],
-          }),
+          body: JSON.stringify({ messages: [{ role: "user", content: buildCheckPrompt() }] }),
         });
         const data = await response.json();
         const text = data.choices?.[0]?.message?.content || "";
@@ -649,9 +706,7 @@ BRIEFING_NOTE:
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: buildPrompt(descriptionToUse) }],
-        }),
+        body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt(descriptionToUse) }] }),
       });
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content || "";
@@ -685,8 +740,10 @@ BRIEFING_NOTE:
       };
 
       setResult(parsed);
-      incrementUsage();
-      setUsageCount(getUsageCount());
+      if (!isPro) {
+        incrementUsage();
+        setUsageCount(getUsageCount());
+      }
 
       if (form.saveLocally) {
         saveDelegation(parsed);
@@ -710,27 +767,46 @@ BRIEFING_NOTE:
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const remaining = Math.max(0, FREE_LIMIT - usageCount);
+  const remaining = isPro ? null : Math.max(0, FREE_LIMIT - usageCount);
 
   return (
     <div style={{ fontFamily: "'Georgia', serif", background: "#F8FAFC", minHeight: "100vh" }}>
-      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} triggered={upgradeTrigger} />}
       {showHistory && <HistoryPanel items={history} onClose={() => setShowHistory(false)} />}
+
+      {/* Success banner */}
+      {showSuccessBanner && (
+        <div style={{ background: COLORS.green, padding: "12px 24px", textAlign: "center" }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "sans-serif" }}>
+            Payment successful — you now have unlimited access. Welcome to DelegateIgnite Pro.
+          </p>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ background: COLORS.navy, padding: "0 24px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
             <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>DelegateIgnite</span>
-            <Badge color="amber">Beta</Badge>
+            <Badge color={isPro ? "green" : "amber"}>{isPro ? "Pro" : "Beta"}</Badge>
           </div>
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 13, cursor: "pointer", padding: 0 }}>
               History
             </button>
-            <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>
-              {remaining} free {remaining === 1 ? "use" : "uses"} left
-            </div>
+            {!isPro && (
+              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>
+                {remaining} free {remaining === 1 ? "use" : "uses"} left
+              </div>
+            )}
+            {!isPro && (
+              <button
+                onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }}
+                style={{ background: COLORS.teal, border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "sans-serif", fontWeight: 600, cursor: "pointer" }}
+              >
+                Upgrade
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -778,7 +854,6 @@ BRIEFING_NOTE:
             <ToggleGroup label="Confidence level" value={form.confidenceLevel} onChange={f("confidenceLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
           </div>
 
-          {/* Live cadence preview — appears once all four task/person fields are set */}
           {cadence && (
             <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
               <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 12px", fontFamily: "sans-serif" }}>Suggested check-in cadence</h3>
@@ -806,10 +881,10 @@ BRIEFING_NOTE:
             {loading ? "Generating your delegation guide..." : "Generate delegation guide"}
           </button>
 
-          {remaining <= 1 && !loading && (
+          {!isPro && remaining <= 1 && !loading && (
             <p style={{ textAlign: "center", fontSize: 12, color: COLORS.amber, marginTop: 10, fontFamily: "sans-serif" }}>
               {remaining === 0 ? "You've used all free delegations." : "Last free delegation."}{" "}
-              <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => setShowUpgrade(true)}>Upgrade for unlimited access.</span>
+              <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => { setUpgradeTrigger("limit"); setShowUpgrade(true); }}>Upgrade for unlimited access.</span>
             </p>
           )}
         </div>
@@ -820,19 +895,12 @@ BRIEFING_NOTE:
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
               <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>⚠️</div>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>
-                  Your goal needs sharpening
-                </p>
-                <p style={{ fontSize: 13, color: COLORS.text, margin: 0, fontFamily: "sans-serif", lineHeight: 1.6 }}>
-                  {goalCheck.reason}
-                </p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>Your goal needs sharpening</p>
+                <p style={{ fontSize: 13, color: COLORS.text, margin: 0, fontFamily: "sans-serif", lineHeight: 1.6 }}>{goalCheck.reason}</p>
               </div>
             </div>
-
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6, fontFamily: "sans-serif" }}>
-                Suggested rewrite — edit if needed:
-              </label>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6, fontFamily: "sans-serif" }}>Suggested rewrite — edit if needed:</label>
               <textarea
                 value={sharpenedGoal}
                 onChange={e => setSharpenedGoal(e.target.value)}
@@ -840,7 +908,6 @@ BRIEFING_NOTE:
                 style={{ width: "100%", padding: "10px 14px", border: `1.5px solid ${COLORS.amber}`, borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white, outline: "none", resize: "vertical" }}
               />
             </div>
-
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button
                 onClick={() => { setGoalAccepted(true); runGenerate(sharpenedGoal); }}
@@ -877,23 +944,12 @@ BRIEFING_NOTE:
               />
             )}
 
-            <OutputBox
-              title="Advice for the delegator"
-              content={result.delegationAdvice}
-              badge={{ color: "blue", label: "Manager only" }}
-            />
-            <OutputBox
-              title={`Briefing note for ${result.delegateeName}`}
-              content={result.briefingNote}
-              badge={{ color: "teal", label: "Share with delegatee" }}
-            />
+            <OutputBox title="Advice for the delegator" content={result.delegationAdvice} badge={{ color: "blue", label: "Manager only" }} />
+            <OutputBox title={`Briefing note for ${result.delegateeName}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} />
 
             <div style={{ background: COLORS.slateLight, borderRadius: 10, padding: "14px 18px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
               <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
-              <button
-                onClick={resetAll}
-                style={{ fontSize: 13, padding: "7px 16px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 8, color: COLORS.navy, cursor: "pointer", fontFamily: "sans-serif", fontWeight: 500 }}
-              >
+              <button onClick={resetAll} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 8, color: COLORS.navy, cursor: "pointer", fontFamily: "sans-serif", fontWeight: 500 }}>
                 New delegation
               </button>
             </div>
@@ -923,8 +979,9 @@ BRIEFING_NOTE:
         {/* Footer */}
         <div style={{ borderTop: `1px solid ${COLORS.border}`, marginTop: 40, paddingTop: 20, textAlign: "center" }}>
           <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>
-            DelegateIgnite by <a href="#" style={{ color: COLORS.blue, textDecoration: "none" }}>The Message Business</a> · {remaining} free {remaining === 1 ? "use" : "uses"} remaining ·{" "}
-            <span style={{ textDecoration: "underline", cursor: "pointer", color: COLORS.blue }} onClick={() => setShowUpgrade(true)}>Upgrade to Pro</span>
+            DelegateIgnite by <a href="#" style={{ color: COLORS.blue, textDecoration: "none" }}>The Message Business</a>
+            {!isPro && <> · {remaining} free {remaining === 1 ? "use" : "uses"} remaining · <span style={{ textDecoration: "underline", cursor: "pointer", color: COLORS.blue }} onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }}>Upgrade to Pro</span></>}
+            {isPro && <> · <span style={{ color: COLORS.green, fontWeight: 600 }}>Pro — unlimited access</span></>}
           </p>
         </div>
       </div>
