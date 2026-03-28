@@ -158,6 +158,89 @@ function saveDelegation(data) {
   } catch {}
 }
 
+// ── ICS calendar file generator ─────────────────────────────────────────────
+function generateICS({ taskTitle, delegateeName, managerName, cadence }) {
+  // Map cadence frequency to RRULE and duration
+  const freq = cadence.frequency.toLowerCase();
+  let rrule = "";
+  let durationMins = 30;
+
+  if (freq.includes("every 2") || freq.includes("2–3 days") || freq.includes("2-3 days")) {
+    rrule = "RRULE:FREQ=DAILY;INTERVAL=2";
+    durationMins = 20;
+  } else if (freq.includes("twice")) {
+    rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO,TH";
+    durationMins = 20;
+  } else if (freq.includes("fortnightly")) {
+    rrule = "RRULE:FREQ=WEEKLY;INTERVAL=2";
+    durationMins = 30;
+  } else if (freq.includes("weekly")) {
+    rrule = "RRULE:FREQ=WEEKLY";
+    durationMins = 15;
+  } else if (freq.includes("completion") || freq.includes("at completion")) {
+    // No recurrence — single event at deadline reminder
+    rrule = "";
+    durationMins = 30;
+  } else {
+    rrule = "RRULE:FREQ=WEEKLY";
+    durationMins = 15;
+  }
+
+  // Start: next working day at 09:00 local — expressed as floating time in ICS
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() + 1);
+  // Skip to Monday if landing on weekend
+  const day = start.getDay();
+  if (day === 0) start.setDate(start.getDate() + 1);
+  if (day === 6) start.setDate(start.getDate() + 2);
+  start.setHours(9, 0, 0, 0);
+
+  const end = new Date(start.getTime() + durationMins * 60 * 1000);
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmt = (d) =>
+    `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+  const uid = `delegateignite-${Date.now()}@themessagebusiness.com`;
+  const summary = `Check-in: ${taskTitle} with ${delegateeName}`;
+  const description = cadence.managerNote.replace(/\n/g, "\\n").replace(/,/g, "\\,");
+
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//The Message Business//DelegateIgnite//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `SUMMARY:${summary}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `DESCRIPTION:${description}`,
+    `ORGANIZER;CN=${managerName}:mailto:organizer@delegateignite.app`,
+    rrule ? rrule : null,
+    "STATUS:CONFIRMED",
+    "BEGIN:VALARM",
+    "TRIGGER:-PT15M",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Reminder",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].filter(Boolean).join("\r\n");
+
+  const blob = new Blob([lines], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `delegateignite-checkins-${delegateeName.replace(/\s+/g, "-").toLowerCase()}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function Badge({ color, children }) {
   const styles = {
     blue: { bg: COLORS.blueLight, text: COLORS.blue },
@@ -173,16 +256,27 @@ function Badge({ color, children }) {
   );
 }
 
-function CadenceCard({ cadence }) {
+function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
   if (!cadence) return null;
+  const canSchedule = !cadence.frequency.toLowerCase().includes("completion");
   return (
     <div style={{ background: COLORS.tealLight, border: `1px solid ${COLORS.teal}`, borderRadius: 12, padding: "18px 22px", marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <div style={{ width: 32, height: 32, background: COLORS.teal, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🔁</div>
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 600, color: COLORS.teal, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Recommended cadence</p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>{cadence.frequency}</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, background: COLORS.teal, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🔁</div>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 600, color: COLORS.teal, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Recommended cadence</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>{cadence.frequency}</p>
+          </div>
         </div>
+        {canSchedule && (
+          <button
+            onClick={() => generateICS({ taskTitle, delegateeName, managerName, cadence })}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: COLORS.teal, color: "#fff", border: "none", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif", whiteSpace: "nowrap" }}
+          >
+            <span style={{ fontSize: 14 }}>📅</span> Add to calendar
+          </button>
+        )}
       </div>
       <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: "sans-serif" }}>
         <strong>Format:</strong> {cadence.format}
@@ -774,7 +868,14 @@ BRIEFING_NOTE:
 
             <LevelMeter level={result.delegationLevel} />
 
-            {result.cadence && <CadenceCard cadence={result.cadence} />}
+            {result.cadence && (
+              <CadenceCard
+                cadence={result.cadence}
+                taskTitle={result.taskTitle}
+                delegateeName={result.delegateeName}
+                managerName={result.managerName}
+              />
+            )}
 
             <OutputBox
               title="Advice for the delegator"
