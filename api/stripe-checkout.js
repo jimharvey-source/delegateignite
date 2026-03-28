@@ -10,7 +10,6 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  console.log("KEY CHECK:", secretKey ? "present, length=" + secretKey.length : "MISSING");
 
   if (!secretKey) {
     console.error("STRIPE_SECRET_KEY is not set");
