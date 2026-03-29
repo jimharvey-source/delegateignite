@@ -734,31 +734,40 @@ BRIEFING_NOTE:
       )}
 
       {/* Header */}
-      <div style={{ background: COLORS.navy, padding: "0 24px" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>DelegateIgnite</span>
+      {/* Header */}
+      <div style={{ background: "#ffffff", borderBottom: "1px solid #e8e8f0", padding: "0 24px", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 68 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, background: "#0077B6", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" fill="none" style={{ width: 18, height: 18 }}>
+                <path d="M12 2C12 2 7 7 7 13a5 5 0 0010 0C17 7 12 2 12 2z" fill="white" opacity="0.9"/>
+                <path d="M12 8c0 0-3 3-3 5a3 3 0 006 0C15 11 12 8 12 8z" fill="white" opacity="0.45"/>
+              </svg>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: "1.25rem", fontWeight: 600, color: "#1a1a2e", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Delegate <span style={{ color: "#0077B6" }}>Ignite</span></span>
+              <span style={{ fontFamily: "'Outfit', system-ui, sans-serif", fontSize: "0.65rem", fontWeight: 400, color: "#9b9bb0", letterSpacing: "0.08em", textTransform: "uppercase" }}>Part of the Management Ignition Suite</span>
+            </div>
             <Badge color={isPro ? "green" : "amber"}>{isPro ? "Pro" : "Beta"}</Badge>
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: "sans-serif" }}>History</button>
+            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "#6b6b85", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: "'Outfit', sans-serif" }}>History</button>
             {user ? (
               <>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "sans-serif" }}>{user.email}</span>
-                <button onClick={signOut} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign out</button>
+                <span style={{ fontSize: 12, color: "#9b9bb0", fontFamily: "'Outfit', sans-serif" }}>{user.email}</span>
+                <button onClick={signOut} style={{ background: "none", border: "1px solid #d0d0e0", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#6b6b85", fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}>Sign out</button>
               </>
             ) : (
-              <button onClick={() => setShowAuth(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign in</button>
+              <button onClick={() => setShowAuth(true)} style={{ background: "none", border: "1px solid #d0d0e0", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#6b6b85", fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}>Sign in</button>
             )}
             {!isPro && (
               <>
-                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>{remaining} free {remaining === 1 ? "use" : "uses"} left</div>
-                <button onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }} style={{ background: COLORS.teal, border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "sans-serif", fontWeight: 600, cursor: "pointer" }}>Upgrade</button>
+                <div style={{ background: "#f0f8ff", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#3d3d56", fontFamily: "'Outfit', sans-serif" }}>{remaining} free {remaining === 1 ? "use" : "uses"} left</div>
+                <button onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }} style={{ background: "#0077B6", border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "'Outfit', sans-serif", fontWeight: 600, cursor: "pointer" }}>Upgrade</button>
               </>
             )}
           </div>
         </div>
-      </div>
 
       {/* Hero */}
       <div style={{ background: COLORS.navy, borderBottom: `3px solid ${COLORS.teal}`, paddingBottom: 32 }}>
