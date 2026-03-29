@@ -768,6 +768,7 @@ BRIEFING_NOTE:
             )}
           </div>
         </div>
+        </div>
 
       {/* Hero */}
       <div style={{ background: COLORS.navy, borderBottom: `3px solid ${COLORS.teal}`, paddingBottom: 32 }}>
