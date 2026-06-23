@@ -621,7 +621,11 @@ DELEGATION_LEVEL: [number only, e.g. 4]
 DELEGATION_ADVICE:
 [Write detailed, practical guidance for ${form.managerName}. Use the 9-step delegation process as the structure. Include: why this delegation level is appropriate; communication tips specific to this delegatee; likely risks or watch-outs; the check-in cadence from the CADENCE GUIDANCE above woven naturally into the advice. Be specific and concrete. Minimum 400 words.
 
-IMPORTANT: Open the advice with a short paragraph reminding ${form.managerName} that the briefing note below is designed to be used as a guide for a face-to-face or phone conversation with ${form.delegateeName} — not sent as a cold email. The conversation is where commitment is built. The note gives structure to that conversation and can be shared afterwards as a written record of what was agreed.
+IMPORTANT: Open the advice with exactly this paragraph, substituting the names:
+
+"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence — for an important project — with a valued member of your team.
+
+Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
@@ -637,7 +641,7 @@ The task
 What the task is, what it involves, and why it matters — specifically, what is at stake for the team or organisation. Be concrete.
 
 Why you
-A genuine, specific explanation of why ${form.delegateeName} has been chosen. Not flattery — honest reasoning. What does this task offer them in terms of development, visibility, and growing their skills and profile? Write this so that ${form.delegateeName} feels chosen, not just assigned. This should make them feel capable and respected, even if the task feels stretching.
+A genuine, specific explanation of why ${form.delegateeName} has been chosen for this particular task. Draw on the task description and context to make this specific — not a generic statement about potential, but a real reason connected to this task, this moment, and this person. What does taking this on mean for their development, visibility, and standing? One well-chosen, specific sentence here is worth more than three vague ones about potential. The test: would ${form.delegateeName} read this and feel that their manager had thought carefully about them — not just filled a slot?
 
 How I will work with you
 Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, and what needs to come back to ${form.managerName}. Be explicit that ${form.managerName} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
@@ -648,7 +652,7 @@ Set out the specific success criteria for this task — the measurable outcomes 
 The process from here
 Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${form.delegateeName} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
 
-Close with a paragraph about the first meeting. Frame it as a proper two-way conversation — a chance to agree the approach, the timescales, the success criteria, the support available, and anything ${form.delegateeName} wants to shape or change. Tell them clearly that they are the right person for this, that this task will develop their skills, profile, and experience in a way that matters. Ask them to come ready to discuss the opportunity, raise anything they need, and say honestly what support would help them do this well.
+Close with a paragraph about the first meeting. Frame it as a proper two-way conversation — not a briefing, not a sign-off, but a genuine discussion. They should come ready to ask questions, push back on anything that does not feel right, and say honestly what they need to do this well. Write the closing in the manager's voice, matter-of-fact and warm — the tone of someone who has made a considered decision, is clear about why, and wants the person to succeed. Not a motivational sign-off. The last sentence should leave ${form.delegateeName} feeling that someone who knows what they are doing has looked at this carefully and decided they are the right person for it.
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
