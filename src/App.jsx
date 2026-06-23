@@ -534,7 +534,9 @@ export default function DelegateIgnite() {
     return null;
   };
 
-  const buildCheckPrompt = () => `
+  const buildCheckPrompt = () => {
+    const capitaliseName = (name) => name.trim().split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    return `
 You are reviewing a manager's task description before they generate a delegation guide.
 
 TASK TITLE: ${form.taskTitle}
@@ -559,16 +561,22 @@ Respond in EXACTLY this format — no other text:
 STATUS: [PASS or FAIL]
 REASON: [One plain sentence explaining why it passes or fails. If PASS, say so briefly.]
 SHARPENED: [If FAIL, rewrite the task description as a specific, outcome-focused version. If PASS, repeat the original description unchanged.]
-`;
+`;;
+  }
 
   const buildPrompt = (descriptionToUse) => {
+    const capitaliseName = (name) => name.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const managerNameCapped = capitaliseName(form.managerName);
+    const delegateeNameCapped = capitaliseName(form.delegateeName);
+    const delegateeFirstName = capitaliseName(form.delegateeName).split(' ')[0];
+    const managerFirstName = capitaliseName(form.managerName).split(' ')[0];
     const c = getCadenceGuidance(form.complexity, form.importance, form.skillLevel, form.confidenceLevel);
     return `
 You are an expert delegation coach. Generate detailed, practical delegation guidance using the framework below.
 
 INPUTS:
-- Manager: ${form.managerName}
-- Delegatee: ${form.delegateeName}
+- Manager: ${managerNameCapped}
+- Delegatee: ${delegateeNameCapped}
 - Task: ${form.taskTitle}
 - Description: ${descriptionToUse}
 - Required outcomes: ${form.outcomes || "Not specified"}
@@ -622,13 +630,15 @@ YOUR RESPONSE MUST USE EXACTLY THIS FORMAT — NO DEVIATIONS:
 DELEGATION_LEVEL: [number only, e.g. 4]
 
 DELEGATION_ADVICE:
-[Write detailed, practical guidance for ${form.managerName}. Structure it as follows:
+[Write detailed, practical guidance for ${managerNameCapped}. Structure it as follows:
 
 OPENING (write this exactly, substituting the names):
 "This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence — for an important project — with a valued member of your team. Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
 
 LEVEL AND RATIONALE (write this as a short paragraph, 3-5 sentences):
-Name the delegation level chosen and its title (e.g. "Level 4 — Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person — drawing on the task complexity, importance, and where ${form.delegateeName} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${form.delegateeName} the best possible chance of succeeding with this task."
+Name the delegation level chosen and its title (e.g. "Level 4 — Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person — drawing on the task complexity, importance, and where ${delegateeNameCapped} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${delegateeNameCapped} the best possible chance of succeeding with this task."
+
+NAME USAGE: In the DELEGATION_ADVICE section, refer to the delegatee by first name only (${delegateeFirstName}) and the manager by first name only (${managerFirstName}). In the BRIEFING_NOTE, address the delegatee by first name only (${delegateeFirstName}) and refer to the manager by first name only (${managerFirstName}).
 
 NINE STEPS (numbered 1-9, each as a short paragraph):
 Work through each step of the 9-step delegation process with specific, practical guidance for this task and this person. Each step should be a short paragraph — concrete and actionable, not generic. Include the check-in cadence from CADENCE GUIDANCE woven naturally into step 7. Keep each step focused and useful.
@@ -638,11 +648,11 @@ Name the one or two most likely risks given this task and this person, and how t
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
-- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${form.delegateeName} is with tasks like this".
+- Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${delegateeNameCapped} is with tasks like this".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
-[Write a structured briefing note addressed directly to ${form.delegateeName}. It is designed to guide a face-to-face or phone conversation, and to be shared afterwards as a written record. Use first-person manager voice throughout.
+[Write a structured briefing note addressed directly to ${delegateeNameCapped}. It is designed to guide a face-to-face or phone conversation, and to be shared afterwards as a written record. Use first-person manager voice throughout.
 
 Structure it in five clear sections with plain text headings (no bold, no markdown — just the heading on its own line followed by the text):
 
@@ -650,23 +660,23 @@ The task
 What the task is, what it involves, and why it matters — specifically, what is at stake for the team or organisation. Be concrete.
 
 Why you
-A genuine explanation of why ${form.delegateeName} has been chosen. Draw on the task description and context. If the manager has provided a specific reason in the PERSONAL REASON field below, use it directly and build around it — this is the most important input for this section. If no personal reason was provided, draw on the task context to construct the most specific case you can, and end this section with this exact line on its own: "Note for ${form.managerName}: the Why you section works best with a personal detail only you know. Consider adding one before you share this with ${form.delegateeName}."
+A genuine explanation of why ${delegateeNameCapped} has been chosen. Draw on the task description and context. If the manager has provided a specific reason in the PERSONAL REASON field below, use it directly and build around it — this is the most important input for this section. If no personal reason was provided, draw on the task context to construct the most specific case you can, and end this section with this exact line on its own: "Note for ${managerNameCapped}: the Why you section works best with a personal detail only you know. Consider adding one before you share this with ${delegateeNameCapped}."
 
 How I will work with you
-Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, and what needs to come back to ${form.managerName}. Be explicit that ${form.managerName} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
+Explain the delegation approach clearly — the level of freedom ${delegateeNameCapped} has, what decisions are theirs to make, and what needs to come back to ${managerNameCapped}. Be explicit that ${managerNameCapped} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
 
 What success looks like and what we will agree together
-Set out the specific success criteria for this task — the measurable outcomes — and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${form.delegateeName} can work towards them with confidence, clear on what good looks like. Mention that resourcing — budgets, contacts, access — will also be agreed in that first meeting so there are no blockers.
+Set out the specific success criteria for this task — the measurable outcomes — and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${delegateeNameCapped} can work towards them with confidence, clear on what good looks like. Mention that resourcing — budgets, contacts, access — will also be agreed in that first meeting so there are no blockers.
 
 The process from here
-Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${form.delegateeName} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
+Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${delegateeNameCapped} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
 
 Close with a short paragraph about the first meeting. The tone is quiet and direct — the voice of a manager who has thought about this carefully and is clear about their decision. No rallying cry, no motivational language. Something closer to: "I have thought about this carefully and I think you are the right person for it. Come with your questions, come with your concerns, and come ready to shape this so it works for you. That is what the first meeting is for." It should feel like the end of a considered conversation, not the start of a motivational speech.
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
-- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence.
-- Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${form.delegateeName} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
+- Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence.
+- Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${delegateeNameCapped} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
 `;
   };
 
