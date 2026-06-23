@@ -448,7 +448,7 @@ export default function DelegateIgnite() {
   const [form, setForm] = useState({
     managerName: "", delegateeName: "", taskTitle: "", taskDescription: "",
     outcomes: "", deadline: "", complexity: "", importance: "",
-    skillLevel: "", confidenceLevel: "", saveLocally: false,
+    skillLevel: "", confidenceLevel: "", personalReason: "", saveLocally: false,
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -577,6 +577,9 @@ INPUTS:
 - Task importance: ${form.importance}
 - Delegatee skill level: ${form.skillLevel}
 - Delegatee confidence level: ${form.confidenceLevel}
+- Personal reason for choosing this person (optional, use if provided): ${form.personalReason || "Not provided"}
+
+PERSONAL REASON FOR BRIEFING NOTE: ${form.personalReason ? "The manager has given this specific reason for choosing " + form.delegateeName + ": " + form.personalReason + ". Use this directly in the Why you section." : "No personal reason provided. Construct the Why you section from task context, and end it with the note to the manager as instructed."}
 
 CADENCE GUIDANCE (already calculated — use this exactly):
 - Recommended frequency: ${c.frequency}
@@ -619,17 +622,23 @@ YOUR RESPONSE MUST USE EXACTLY THIS FORMAT — NO DEVIATIONS:
 DELEGATION_LEVEL: [number only, e.g. 4]
 
 DELEGATION_ADVICE:
-[Write detailed, practical guidance for ${form.managerName}. Use the 9-step delegation process as the structure. Include: why this delegation level is appropriate; communication tips specific to this delegatee; likely risks or watch-outs; the check-in cadence from the CADENCE GUIDANCE above woven naturally into the advice. Be specific and concrete. Minimum 400 words.
+[Write detailed, practical guidance for ${form.managerName}. Structure it as follows:
 
-IMPORTANT: Open the advice with exactly this paragraph, substituting the names:
+OPENING (write this exactly, substituting the names):
+"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence — for an important project — with a valued member of your team. Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
 
-"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence — for an important project — with a valued member of your team.
+LEVEL AND RATIONALE (write this as a short paragraph, 3-5 sentences):
+Name the delegation level chosen and its title (e.g. "Level 4 — Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person — drawing on the task complexity, importance, and where ${form.delegateeName} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${form.delegateeName} the best possible chance of succeeding with this task."
 
-Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
+NINE STEPS (numbered 1-9, each as a short paragraph):
+Work through each step of the 9-step delegation process with specific, practical guidance for this task and this person. Each step should be a short paragraph — concrete and actionable, not generic. Include the check-in cadence from CADENCE GUIDANCE woven naturally into step 7. Keep each step focused and useful.
+
+RISKS (one short paragraph):
+Name the one or two most likely risks given this task and this person, and how to mitigate them.
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
-- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence. Write contextually instead — for example: "at this stage with this type of work", "given where ${form.delegateeName} is with tasks like this", "as ${form.delegateeName} builds familiarity with this kind of responsibility".
+- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${form.delegateeName} is with tasks like this".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
@@ -641,7 +650,7 @@ The task
 What the task is, what it involves, and why it matters — specifically, what is at stake for the team or organisation. Be concrete.
 
 Why you
-A genuine, specific explanation of why ${form.delegateeName} has been chosen for this particular task. Draw on the task description and context to make this specific — not a generic statement about potential, but a real reason connected to this task, this moment, and this person. What does taking this on mean for their development, visibility, and standing? One well-chosen, specific sentence here is worth more than three vague ones about potential. The test: would ${form.delegateeName} read this and feel that their manager had thought carefully about them — not just filled a slot?
+A genuine explanation of why ${form.delegateeName} has been chosen. Draw on the task description and context. If the manager has provided a specific reason in the PERSONAL REASON field below, use it directly and build around it — this is the most important input for this section. If no personal reason was provided, draw on the task context to construct the most specific case you can, and end this section with this exact line on its own: "Note for ${form.managerName}: the Why you section works best with a personal detail only you know. Consider adding one before you share this with ${form.delegateeName}."
 
 How I will work with you
 Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, and what needs to come back to ${form.managerName}. Be explicit that ${form.managerName} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
@@ -652,7 +661,7 @@ Set out the specific success criteria for this task — the measurable outcomes 
 The process from here
 Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${form.delegateeName} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
 
-Close with a paragraph about the first meeting. Frame it as a proper two-way conversation — not a briefing, not a sign-off, but a genuine discussion. They should come ready to ask questions, push back on anything that does not feel right, and say honestly what they need to do this well. Write the closing in the manager's voice, matter-of-fact and warm — the tone of someone who has made a considered decision, is clear about why, and wants the person to succeed. Not a motivational sign-off. The last sentence should leave ${form.delegateeName} feeling that someone who knows what they are doing has looked at this carefully and decided they are the right person for it.
+Close with a short paragraph about the first meeting. The tone is quiet and direct — the voice of a manager who has thought about this carefully and is clear about their decision. No rallying cry, no motivational language. Something closer to: "I have thought about this carefully and I think you are the right person for it. Come with your questions, come with your concerns, and come ready to shape this so it works for you. That is what the first meeting is for." It should feel like the end of a considered conversation, not the start of a motivational speech.
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
@@ -828,6 +837,12 @@ CRITICAL FORMATTING RULES — no exceptions:
             <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 16px", fontFamily: "sans-serif" }}>About {form.delegateeName || "the delegatee"}</h3>
             <ToggleGroup label="Skill level for this type of task" value={form.skillLevel} onChange={f("skillLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
             <ToggleGroup label="Confidence level" value={form.confidenceLevel} onChange={f("confidenceLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
+          </div>
+
+          <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>Why this person for this task?</h3>
+            <p style={{ fontSize: 12.5, color: COLORS.muted, margin: "0 0 10px", fontFamily: "sans-serif", fontStyle: "italic", lineHeight: 1.5 }}>Optional. The ‘Why you’ section works best with a personal detail only you know. Add it here and it will be woven into the briefing note.</p>
+            <TextField label="" value={form.personalReason} onChange={f("personalReason")} placeholder="e.g. I have seen how you handled the Barclays account and I think you are ready for this." multiline />
           </div>
 
           {cadence && (
