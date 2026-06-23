@@ -621,35 +621,39 @@ DELEGATION_LEVEL: [number only, e.g. 4]
 DELEGATION_ADVICE:
 [Write detailed, practical guidance for ${form.managerName}. Use the 9-step delegation process as the structure. Include: why this delegation level is appropriate; communication tips specific to this delegatee; likely risks or watch-outs; the check-in cadence from the CADENCE GUIDANCE above woven naturally into the advice. Be specific and concrete. Minimum 400 words.
 
+IMPORTANT: Open the advice with a short paragraph reminding ${form.managerName} that the briefing note below is designed to be used as a guide for a face-to-face or phone conversation with ${form.delegateeName} — not sent as a cold email. The conversation is where commitment is built. The note gives structure to that conversation and can be shared afterwards as a written record of what was agreed.
+
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
-- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence. Instead write contextually — for example: "at this stage with this type of work", "given where ${form.delegateeName} is with tasks like this", "with the experience ${form.delegateeName} brings to this", "as ${form.delegateeName} builds familiarity with this kind of responsibility". The skill and confidence inputs are calibration data for your recommendations — they are not labels to repeat back.
+- Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence. Write contextually instead — for example: "at this stage with this type of work", "given where ${form.delegateeName} is with tasks like this", "as ${form.delegateeName} builds familiarity with this kind of responsibility".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
-[Write a structured briefing note addressed directly to ${form.delegateeName}. It should work equally well read aloud as a conversation opener or sent as an email before the first meeting. Use first-person manager voice throughout (e.g. "I'd like you to...", "You have freedom to...", "I'll be available if...").
+[Write a structured briefing note addressed directly to ${form.delegateeName}. It is designed to guide a face-to-face or phone conversation, and to be shared afterwards as a written record. Use first-person manager voice throughout.
 
 Structure it in five clear sections with plain text headings (no bold, no markdown — just the heading on its own line followed by the text):
 
 The task
-What the task is, what it involves, and why it matters to the team and the organisation. Be specific about the context and the stakes.
+What the task is, what it involves, and why it matters — specifically, what is at stake for the team or organisation. Be concrete.
 
 Why you
-A genuine, specific explanation of why ${form.delegateeName} has been chosen for this task — not flattery, but honest reasoning. What does this task offer them in terms of development, visibility, or responsibility? Why now?
+A genuine, specific explanation of why ${form.delegateeName} has been chosen. Not flattery — honest reasoning. What does this task offer them in terms of development, visibility, and growing their skills and profile? Write this so that ${form.delegateeName} feels chosen, not just assigned. This should make them feel capable and respected, even if the task feels stretching.
 
-How I'll work with you
-Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, what needs to come back to ${form.managerName}, and what support is available. This section should make the working relationship and boundaries clear without making it feel like a contract.
+How I will work with you
+Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, and what needs to come back to ${form.managerName}. Be explicit that ${form.managerName} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
+
+What success looks like and what we will agree together
+Set out the specific success criteria for this task — the measurable outcomes — and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${form.delegateeName} can work towards them with confidence, clear on what good looks like. Mention that resourcing — budgets, contacts, access — will also be agreed in that first meeting so there are no blockers.
 
 The process from here
-Set out the timescales, the deadline, and the check-in cadence from CADENCE GUIDANCE. Be specific about the frequency and format. Explain what each check-in is for — not to monitor progress but to make sure ${form.delegateeName} has what they need. Ask them to keep a brief log of progress, blockers, and questions to bring to each session.
+Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${form.delegateeName} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
 
-Our first meeting
-Close with a paragraph about the first check-in. Frame it as a proper conversation — a chance for the two of them to agree all elements of the approach together: the timescales, the way they will work, the support available, and anything ${form.delegateeName} wants to shape or change. Ask them to come ready to discuss the opportunity, raise any questions, and say honestly what they need to do this well.
+Close with a paragraph about the first meeting. Frame it as a proper two-way conversation — a chance to agree the approach, the timescales, the success criteria, the support available, and anything ${form.delegateeName} wants to shape or change. Tell them clearly that they are the right person for this, that this task will develop their skills, profile, and experience in a way that matters. Ask them to come ready to discuss the opportunity, raise anything they need, and say honestly what support would help them do this well.
 
 CRITICAL FORMATTING RULES — no exceptions:
 - No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
 - Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence.
-- Write in plain, direct UK English. Warm but not gushing. Minimum 400 words.]
+- Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${form.delegateeName} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
 `;
   };
 
