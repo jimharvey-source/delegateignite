@@ -627,14 +627,29 @@ CRITICAL FORMATTING RULES — no exceptions:
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
-[Write a professional briefing note addressed directly to ${form.delegateeName}. It should work equally well read aloud as a conversation opener or sent as an email. Use first-person manager voice (e.g. "I'd like you to...", "You have freedom to...", "Please come back to me if..."). Include: clear task explanation; expected outcomes; timescales and review points; level of autonomy; available support; the check-in arrangement from the CADENCE GUIDANCE above.
+[Write a structured briefing note addressed directly to ${form.delegateeName}. It should work equally well read aloud as a conversation opener or sent as an email before the first meeting. Use first-person manager voice throughout (e.g. "I'd like you to...", "You have freedom to...", "I'll be available if...").
 
-End with a closing paragraph that: references the first check-in meeting (use the cadence frequency and format from CADENCE GUIDANCE); asks ${form.delegateeName} to come ready to discuss the opportunity, shape it to suit their needs, and ask any questions they have; and closes warmly but without being effusive.
+Structure it in five clear sections with plain text headings (no bold, no markdown — just the heading on its own line followed by the text):
+
+The task
+What the task is, what it involves, and why it matters to the team and the organisation. Be specific about the context and the stakes.
+
+Why you
+A genuine, specific explanation of why ${form.delegateeName} has been chosen for this task — not flattery, but honest reasoning. What does this task offer them in terms of development, visibility, or responsibility? Why now?
+
+How I'll work with you
+Explain the delegation approach clearly — the level of freedom ${form.delegateeName} has, what decisions are theirs to make, what needs to come back to ${form.managerName}, and what support is available. This section should make the working relationship and boundaries clear without making it feel like a contract.
+
+The process from here
+Set out the timescales, the deadline, and the check-in cadence from CADENCE GUIDANCE. Be specific about the frequency and format. Explain what each check-in is for — not to monitor progress but to make sure ${form.delegateeName} has what they need. Ask them to keep a brief log of progress, blockers, and questions to bring to each session.
+
+Our first meeting
+Close with a paragraph about the first check-in. Frame it as a proper conversation — a chance for the two of them to agree all elements of the approach together: the timescales, the way they will work, the support available, and anything ${form.delegateeName} wants to shape or change. Ask them to come ready to discuss the opportunity, raise any questions, and say honestly what they need to do this well.
 
 CRITICAL FORMATTING RULES — no exceptions:
-- No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
+- No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
 - Never use the words "low", "medium", or "high" to describe ${form.delegateeName}'s skill or confidence.
-- Write in plain, direct UK English. Warm but not gushing. Minimum 300 words.]
+- Write in plain, direct UK English. Warm but not gushing. Minimum 400 words.]
 `;
   };
 
