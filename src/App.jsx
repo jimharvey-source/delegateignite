@@ -647,7 +647,9 @@ RISKS (one short paragraph):
 Name the one or two most likely risks given this task and this person, and how to mitigate them.
 
 CRITICAL FORMATTING RULES — no exceptions:
-- No markdown. No bold. No asterisks. No ** characters anywhere. Plain prose only.
+- No markdown of any kind. No bold, no asterisks, no ** characters, no ## or ### headings, no hyphen or bullet lists, no backticks. Plain prose and plain numbered steps only.
+- No exclamation marks. No hashtags or tags of any kind anywhere (never end with something like "#management").
+- Do not invent or state any specific calendar date. Work only from the deadline the manager supplied. For review points and check-ins in step 7, describe them by their cadence (for example "a brief weekly check-in", "a review at the halfway point"), never by inventing an absolute date.
 - Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${delegateeNameCapped} is with tasks like this".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
@@ -674,7 +676,9 @@ Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what 
 Close with a short paragraph about the first meeting. The tone is quiet and direct — the voice of a manager who has thought about this carefully and is clear about their decision. No rallying cry, no motivational language. Something closer to: "I have thought about this carefully and I think you are the right person for it. Come with your questions, come with your concerns, and come ready to shape this so it works for you. That is what the first meeting is for." It should feel like the end of a considered conversation, not the start of a motivational speech.
 
 CRITICAL FORMATTING RULES — no exceptions:
-- No markdown. No bold. No asterisks. No ** characters anywhere. Section headings on their own line as plain text, then paragraph prose beneath.
+- No markdown of any kind. No bold, no asterisks, no ** characters, no ## or ### headings, no bullet lists, no backticks. Section headings on their own line as plain text, then paragraph prose beneath.
+- No exclamation marks. No hashtags or tags of any kind anywhere.
+- Do not invent or state any specific calendar date. Use only the deadline the manager supplied (${form.deadline || "as discussed"}); refer to review points by their cadence, never by a fabricated date.
 - Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence.
 - Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${delegateeNameCapped} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
 `;
