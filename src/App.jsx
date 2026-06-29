@@ -651,6 +651,7 @@ CRITICAL FORMATTING RULES — no exceptions:
 - No exclamation marks. No hashtags or tags of any kind anywhere (never end with something like "#management").
 - Do not invent or state any specific calendar date. Work only from the deadline the manager supplied. For review points and check-ins in step 7, describe them by their cadence (for example "a brief weekly check-in", "a review at the halfway point"), never by inventing an absolute date.
 - Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${delegateeNameCapped} is with tasks like this".
+- Do not use em dashes in the output: use a comma, a colon, or a full stop instead. Do not use the words "leverage", "empower", "unlock", "journey", "delve", "robust", "seamless", "inspire", or the phrase "moving forward".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
@@ -680,6 +681,7 @@ CRITICAL FORMATTING RULES — no exceptions:
 - No exclamation marks. No hashtags or tags of any kind anywhere.
 - Do not invent or state any specific calendar date. Use only the deadline the manager supplied (${form.deadline || "as discussed"}); refer to review points by their cadence, never by a fabricated date.
 - Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence.
+- Do not use em dashes in the output: use a comma, a colon, or a full stop instead. Do not use the words "leverage", "empower", "unlock", "journey", "delve", "robust", "seamless", "inspire", or the phrase "moving forward".
 - Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${delegateeNameCapped} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
 `;
   };
