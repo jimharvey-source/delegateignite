@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createSuiteClient } from "./lib/mi-session.js";
 
-const supabase = createClient(
-  "https://fdiitxhgfytvlbtokbok.supabase.co",
-  "sb_publishable_JQMFDaTz5g-2ZlitosUTeA_C9B48-Lc"
-);
+const supabase = createSuiteClient({
+  url: "https://fdiitxhgfytvlbtokbok.supabase.co",
+  anonKey: "sb_publishable_JQMFDaTz5g-2ZlitosUTeA_C9B48-Lc",
+});
 
 const COLORS = {
   navy: "#0F2A4A",
