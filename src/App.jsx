@@ -1,4 +1,11 @@
-import { createSuiteClient } from "./lib/mi-session.js";
+import { useState, useEffect, useRef } from "react";
+import {
+  createSuiteClient,
+  personIdFromUrl,
+  loadPerson,
+  hasSuiteAccess,
+  saveToolSession,
+} from "./mi-session.js";
 
 const supabase = createSuiteClient({
   url: "https://fdiitxhgfytvlbtokbok.supabase.co",
@@ -465,6 +472,8 @@ export default function DelegateIgnite() {
   const [sharpenedGoal, setSharpenedGoal] = useState("");
   const [goalAccepted, setGoalAccepted] = useState(false);
   const [cadence, setCadence] = useState(null);
+  const [person, setPerson] = useState(null);
+  const [saveState, setSaveState] = useState("idle");
   const resultsRef = useRef(null);
   const f = (k) => (v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -486,6 +495,34 @@ export default function DelegateIgnite() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // The suite. Who is signed in, do they have access, and which person are
+  // they working on. Entitlement is one call now, replacing the di_pro flag.
+  useEffect(() => {
+    if (!user) { setPerson(null); return; }
+    let cancelled = false;
+
+    (async () => {
+      const paid = await hasSuiteAccess(supabase);
+      if (!cancelled && paid) setIsPro(true);
+
+      const p = await loadPerson(supabase, personIdFromUrl());
+      if (cancelled || !p) return;
+      setPerson(p);
+
+      // Pre-fill from the person record, without overwriting anything the
+      // manager has already typed.
+      setForm(prev => ({
+        ...prev,
+        delegateeName: prev.delegateeName
+          || [p.first_name, p.last_name].filter(Boolean).join(" "),
+        personalReason: prev.personalReason
+          || [p.motivation, p.strengths].filter(Boolean).join(" "),
+      }));
+    })();
+
+    return () => { cancelled = true; };
+  }, [user]);
 
   const loadUserData = async (userId) => {
     try {
@@ -778,6 +815,31 @@ CRITICAL FORMATTING RULES — no exceptions:
 
   const resetAll = () => { setGoalCheck(null); setSharpenedGoal(""); setGoalAccepted(false); setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
+  const saveToPerson = async () => {
+    if (!result || !person) return;
+    setSaveState("saving");
+
+    const { error: saveError } = await saveToolSession(supabase, {
+      tool: "delegate",
+      personId: person.id,
+      title: result.taskTitle,
+      inputs: form,
+      outputs: {
+        delegationLevel: result.delegationLevel,
+        delegationAdvice: result.delegationAdvice,
+        briefingNote: result.briefingNote,
+        cadence: result.cadence,
+      },
+    });
+
+    if (saveError) {
+      setSaveState("idle");
+      setError("That could not be saved to the person record.");
+      return;
+    }
+    setSaveState("saved");
+  };
+
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const downloadPdf = async () => {
     if (!result) return;
@@ -955,6 +1017,15 @@ CRITICAL FORMATTING RULES — no exceptions:
             <div style={{ background: COLORS.slateLight, borderRadius: 10, padding: "14px 18px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
               <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                {person && (
+                  <button onClick={saveToPerson} disabled={saveState !== "idle"} style={{ fontSize: 13, padding: "7px 16px", background: saveState === "saved" ? COLORS.greenLight : COLORS.navy, border: saveState === "saved" ? `1px solid ${COLORS.green}` : "none", borderRadius: 8, color: saveState === "saved" ? COLORS.green : COLORS.white, cursor: saveState === "idle" ? "pointer" : "default", fontFamily: "sans-serif", fontWeight: 600 }}>
+                    {saveState === "saved"
+                      ? `Saved to ${person.first_name}'s record`
+                      : saveState === "saving"
+                        ? "Saving..."
+                        : `Save to ${person.first_name}'s record`}
+                  </button>
+                )}
                 <button onClick={downloadPdf} disabled={downloadingPdf} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.teal, border: "none", borderRadius: 8, color: COLORS.white, cursor: downloadingPdf ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: 600, opacity: downloadingPdf ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}>
                   {downloadingPdf ? "Preparing PDF..." : (isPro ? "Download PDF" : "Download PDF (Pro)")}
                 </button>
