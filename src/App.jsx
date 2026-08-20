@@ -5,6 +5,7 @@ import {
   loadPerson,
   hasSuiteAccess,
   saveToolSession,
+  parseSharpened,
 } from "./mi-session.js";
 
 const supabase = createSuiteClient({
@@ -596,7 +597,7 @@ Respond in EXACTLY this format — no other text:
 
 STATUS: [PASS or FAIL]
 REASON: [One plain sentence explaining why it passes or fails. If PASS, say so briefly.]
-SHARPENED: [If FAIL, rewrite the task description as a specific, outcome-focused version. If PASS, repeat the original description unchanged.]
+SHARPENED: [If FAIL, rewrite the task description as a specific, outcome-focused version. If PASS, repeat the original description unchanged. Give it as a single short paragraph and write nothing after it.]
 `;;
   }
 
@@ -737,10 +738,9 @@ CRITICAL FORMATTING RULES — no exceptions:
         const text = data.choices?.[0]?.message?.content || "";
         const statusMatch = text.match(/STATUS:\s*(PASS|FAIL)/i);
         const reasonMatch = text.match(/REASON:\s*(.+)/i);
-        const sharpenedMatch = text.match(/SHARPENED:\s*([\s\S]+)/i);
         const status = statusMatch?.[1]?.toUpperCase() || "PASS";
         const reason = reasonMatch?.[1]?.trim() || "";
-        const sharpened = sharpenedMatch?.[1]?.trim() || form.taskDescription;
+        const sharpened = parseSharpened(text, form.taskDescription);
         if (status === "PASS") {
           setSharpenedGoal(form.taskDescription);
           setGoalAccepted(true);
