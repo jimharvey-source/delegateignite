@@ -39,6 +39,9 @@ const COLORS = {
   tool: "#0077b6",        // Delegate Ignite
 };
 
+// Names arrive as typed. "joyce adams" shows as "Joyce Adams". Display only.
+const displayName = (s) => String(s || "").trim().split(/\s+/).map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+
 const FONT = {
   sans: '"Instrument Sans", -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif',
   spoken: 'Fraunces, "Iowan Old Style", Georgia, serif',
@@ -245,7 +248,7 @@ function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
   );
 }
 
-function LevelMeter({ level }) {
+function LevelMeter({ level, reason }) {
   if (!level) return null;
   const lvl = parseInt(level);
   const info = LEVEL_DESCRIPTIONS[lvl - 1];
@@ -264,6 +267,12 @@ function LevelMeter({ level }) {
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 4, transition: "width 0.6s ease" }} />
       </div>
       <p style={{ fontSize: 13, color: COLORS.muted, margin: "8px 0 0" }}>{info?.desc}</p>
+      {reason && (
+        <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${COLORS.border}` }}>
+          <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", color: COLORS.muted, margin: "0 0 4px", fontFamily: FONT.sans }}>Why this level</p>
+          <p style={{ fontSize: 15, lineHeight: 1.55, color: COLORS.navyMid, margin: 0, fontFamily: FONT.sans }}>{reason}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -676,6 +685,8 @@ YOUR RESPONSE MUST USE EXACTLY THIS FORMAT — NO DEVIATIONS:
 
 DELEGATION_LEVEL: [number only, e.g. 4]
 
+LEVEL_REASON: [One sentence of 25 words or fewer saying why this level suits this task and ${delegateeFirstName}. Use only what ${managerFirstName} has given you: the task, its complexity and importance, and ${delegateeFirstName}'s skill and confidence. Add no fact that was not given. Do not repeat the level number or its title. Plain text, no em dashes.]
+
 DELEGATION_ADVICE:
 [Write detailed, practical guidance for ${managerNameCapped}. Structure it as follows:
 
@@ -774,6 +785,9 @@ CRITICAL FORMATTING RULES — no exceptions:
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content || "";
       const levelMatch = text.match(/DELEGATION_LEVEL:\s*(\d+)/i);
+      const reasonMatch = text.match(/LEVEL_REASON:\s*(.+)/i);
+      const levelReason = (reasonMatch?.[1] || "").replace(/^\[|\]$/g, "").trim();
+      if (!levelReason) console.warn("LEVEL_REASON missing from the model reply; the level shows without its reason.");
       const adviceStart = text.search(/DELEGATION_ADVICE:/i);
       const briefingStart = text.search(/BRIEFING_NOTE:/i);
       const adviceTagLen = "DELEGATION_ADVICE:".length;
@@ -789,6 +803,7 @@ CRITICAL FORMATTING RULES — no exceptions:
 
       const parsed = {
         delegationLevel: levelMatch?.[1] || "5",
+        levelReason,
         delegationAdvice: delegationAdvice || text,
         briefingNote,
         taskTitle: form.taskTitle,
@@ -1021,10 +1036,10 @@ CRITICAL FORMATTING RULES — no exceptions:
               <h2 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", color: COLORS.navy, margin: 0, fontFamily: FONT.sans }}>Your delegation guide</h2>
               <Badge color="green">Ready to use</Badge>
             </div>
-            <LevelMeter level={result.delegationLevel} />
+            <LevelMeter level={result.delegationLevel} reason={result.levelReason} />
             {result.cadence && <CadenceCard cadence={result.cadence} taskTitle={result.taskTitle} delegateeName={result.delegateeName} managerName={result.managerName} />}
             <OutputBox title="Advice for the delegator" content={result.delegationAdvice} badge={{ color: "blue", label: "Manager only" }} />
-            <OutputBox title={`Briefing note for ${result.delegateeName}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} spoken />
+            <OutputBox title={`Briefing note for ${displayName(result.delegateeName)}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} spoken />
             <div style={{ background: COLORS.white, borderRadius: 10, padding: "16px 20px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <p style={{ fontSize: 14, color: COLORS.navyMid, margin: 0, fontFamily: FONT.sans }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
