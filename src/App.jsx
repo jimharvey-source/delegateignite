@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+
+// The way back to the app, from the header and from the end of every result.
+const DASHBOARD_URL = "https://app.management-ignition.com/";
+// PDF file names: tool, person, then what the work is about, so a saved file says what it is.
+const pdfName = (...parts) => parts
+  .map(s => String(s || "").replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60).trim())
+  .filter(Boolean).join(" - ") + ".pdf";
+
 import {
   createSuiteClient,
   personIdFromUrl,
@@ -881,8 +889,7 @@ CRITICAL FORMATTING RULES — no exceptions:
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const who = result.delegateeName ? ` - ${result.delegateeName}` : "";
-      a.download = `Delegate Ignite${who}.pdf`;
+      a.download = pdfName("Delegate Ignite", result.delegateeName, result.taskTitle || form.taskTitle);
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -918,6 +925,7 @@ CRITICAL FORMATTING RULES — no exceptions:
             <Badge color={isPro ? "green" : "blue"}>{isPro ? "Pro" : "Beta"}</Badge>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <a href={DASHBOARD_URL} style={{ background: "none", border: "none", color: COLORS.navyMid, fontSize: 14, fontWeight: 500, cursor: "pointer", padding: "8px 6px", fontFamily: FONT.sans, textDecoration: "none" }}>Back to dashboard</a>
             <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: COLORS.navyMid, fontSize: 14, fontWeight: 500, cursor: "pointer", padding: "8px 6px", fontFamily: FONT.sans }}>History</button>
             {user ? (
               <>
@@ -1053,6 +1061,7 @@ CRITICAL FORMATTING RULES — no exceptions:
                   </button>
                 )}
                 <button onClick={downloadPdf} disabled={downloadingPdf} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, color: COLORS.navy, cursor: downloadingPdf ? "default" : "pointer", fontFamily: FONT.sans, fontWeight: 600, opacity: downloadingPdf ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}>
+                <a href={DASHBOARD_URL} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, color: COLORS.navy, cursor: "pointer", fontFamily: FONT.sans, fontWeight: 600, display: "flex", alignItems: "center", gap: 7, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Back to dashboard</a>
                   {downloadingPdf ? "Preparing PDF..." : (isPro ? "Download PDF" : "Download PDF (Pro)")}
                 </button>
                 <button onClick={resetAll} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, color: COLORS.navy, cursor: "pointer", fontFamily: FONT.sans, fontWeight: 500 }}>New delegation</button>
