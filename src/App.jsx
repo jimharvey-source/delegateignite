@@ -90,9 +90,9 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
     return {
       frequency: "Weekly structured check-in",
       format: "Brief written update from the delegatee, followed by a 15-minute conversation",
-      rationale: "Even highly capable people benefit from regular contact on high-stakes work. This isn't oversight — it's active interest. It protects them, keeps you informed, and signals that the task matters.",
-      managerNote: "Schedule a weekly 15-minute check-in from the outset. Ask for a brief written update beforehand covering: progress, any blockers, and anything they'd like input on. Keep the conversation focused and forward-looking. Resist the urge to skip these when things seem to be going well — consistency is part of the signal.",
-      delegateeNote: "I'd like us to have a brief weekly check-in — 15 minutes, with a short written update from you beforehand. This isn't about monitoring your progress. It's because this task matters and I want to stay close to it with you. Please cover: where you're up to, anything that's slowing you down, and anything you'd value my input on.",
+      rationale: "Even highly capable people benefit from regular contact on high-stakes work. Regular contact shows active interest. It protects them, keeps you informed, and signals that the task matters.",
+      managerNote: "Schedule a weekly 15-minute check-in from the outset. Ask for a brief written update beforehand covering: progress, any blockers, and anything they'd like input on. Keep the conversation focused and forward-looking. Resist the urge to skip these when things seem to be going well: consistency is part of the signal.",
+      delegateeNote: "I'd like us to have a brief weekly check-in: 15 minutes, with a short written update from you beforehand. This isn't about monitoring your progress. It's because this task matters and I want to stay close to it with you. Please cover: where you're up to, anything that's slowing you down, and anything you'd value my input on.",
     };
   }
   if (highTask && highSkill && medConf) {
@@ -100,8 +100,8 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       frequency: "Weekly check-in with mid-week availability",
       format: "Structured weekly conversation plus an open door for ad hoc contact",
       rationale: "Good skill but some confidence uncertainty on a high-stakes task. Regular contact keeps them anchored and gives you early sight of any hesitation before it becomes a problem.",
-      managerNote: "Hold a weekly check-in and make it clear you're available between sessions if something comes up. Watch for signs of hesitation — not failure, just uncertainty. Your job here is as much encouragement as guidance. Don't wait for them to come to you; check in proactively if you sense they're stalling.",
-      delegateeNote: "Let's keep a weekly check-in in the diary. I'm also available between sessions — if something comes up that you'd like to talk through, don't wait. This is important work and I'd rather hear about a concern early than late.",
+      managerNote: "Hold a weekly check-in and make it clear you're available between sessions if something comes up. Watch for signs of hesitation: not failure, just uncertainty. Your job here is as much encouragement as guidance. Don't wait for them to come to you; check in proactively if you sense they're stalling.",
+      delegateeNote: "Let's keep a weekly check-in in the diary. I'm also available between sessions, if something comes up that you'd like to talk through, don't wait. This is important work and I'd rather hear about a concern early than late.",
     };
   }
   if (highTask && (medSkill || lowSkill) && highConf) {
@@ -109,17 +109,17 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       frequency: "Twice weekly",
       format: "Short structured conversation focused on decisions and blockers",
       rationale: "Confidence is good but skill gaps on a complex or important task create real risk. Frequent short check-ins catch errors before they compound and build the skill as the work progresses.",
-      managerNote: "Two short check-ins per week — 20 minutes each. Focus on the decisions they're facing, not just what's been done. Ask: what options are you considering? What would you do and why? This builds judgement in real time, not just task completion. Keep notes — you're coaching as well as managing.",
-      delegateeNote: "Given the complexity here, I'd like us to check in twice a week — short sessions, around 20 minutes. I want to hear about the decisions you're facing, not just the progress you've made. Come with options, not just questions, and we'll work through them together.",
+      managerNote: "Two short check-ins per week: 20 minutes each. Focus on the decisions they're facing, not just what's been done. Ask: what options are you considering? What would you do and why? This builds judgement in real time, not just task completion. Keep notes: you're coaching as well as managing.",
+      delegateeNote: "Given the complexity here, I'd like us to check in twice a week: short sessions, around 20 minutes. I want to hear about the decisions you're facing, not just the progress you've made. Come with options, not just questions, and we'll work through them together.",
     };
   }
   if (highTask && (medSkill || lowSkill) && (medConf || lowConf)) {
     return {
       frequency: "Every 2–3 days",
       format: "Structured coaching conversation with written notes or action log",
-      rationale: "High task stakes combined with developing skill and lower confidence — this person needs active coaching, not just oversight. Frequent contact prevents drift and builds both capability and belief.",
-      managerNote: "Check in every 2–3 days, minimum. Use a simple action log so you both have a shared record of what's been agreed. Each session: review what's been done, explore what's coming up, agree the next steps. Be specific. Vague encouragement doesn't help someone who's genuinely unsure — clear guidance does. This is your most active coaching scenario.",
-      delegateeNote: "I'd like us to check in every couple of days on this one. It's a significant task and I want to make sure you have everything you need as it unfolds. Please keep a brief log of what you're working on and any questions as they arise — bring that to each session. I'm invested in you getting this right.",
+      rationale: "High task stakes combined with developing skill and lower confidence: this person needs active coaching, not just oversight. Frequent contact prevents drift and builds both capability and belief.",
+      managerNote: "Check in every 2–3 days, minimum. Use a simple action log so you both have a shared record of what's been agreed. Each session: review what's been done, explore what's coming up, agree the next steps. Be specific. Vague encouragement doesn't help someone who's genuinely unsure: clear guidance does. This is your most active coaching scenario.",
+      delegateeNote: "I'd like us to check in every couple of days on this one. It's a significant task and I want to make sure you have everything you need as it unfolds. Please keep a brief log of what you're working on and any questions as they arise: bring that to each session. I'm invested in you getting this right.",
     };
   }
   if (medTask && highSkill && highConf) {
@@ -127,26 +127,26 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       frequency: "Fortnightly review",
       format: "Brief written update at the halfway point, conversation at completion",
       rationale: "Capable, confident person on a moderate task. Light touch is appropriate. A midpoint update keeps you informed without suggesting you don't trust them.",
-      managerNote: "Ask for a brief written update at the halfway point — three or four sentences is enough. Then a conversation when the work is done. Don't over-engineer the oversight on this one. If something significant changes, you'd expect them to flag it without being asked.",
-      delegateeNote: "I'd like a brief written update halfway through — just to keep me in the picture. Then let's talk when it's done. I'm not hovering on this one; I trust your judgement. If anything significant shifts, just let me know.",
+      managerNote: "Ask for a brief written update at the halfway point: three or four sentences is enough. Then a conversation when the work is done. Don't over-engineer the oversight on this one. If something significant changes, you'd expect them to flag it without being asked.",
+      delegateeNote: "I'd like a brief written update halfway through, just to keep me in the picture. Then let's talk when it's done. I'm not hovering on this one; I trust your judgement. If anything significant shifts, just let me know.",
     };
   }
   if (medTask && (medSkill || highSkill) && (medConf || highConf)) {
     return {
       frequency: "Weekly light-touch check-in",
-      format: "Informal conversation or brief written update — their choice",
+      format: "Informal conversation or brief written update: their choice",
       rationale: "Reasonably capable and confident on a moderate task. Weekly contact keeps you visible and available without implying a lack of trust.",
-      managerNote: "A weekly check-in is enough here — keep it light. Let them choose the format: a quick message or a short conversation. Your job is availability and awareness, not close management. Ask one good question each time: what's the thing most likely to slow this down?",
-      delegateeNote: "Let's keep a light weekly check-in — a short message or a quick conversation, whichever works better for you. I want to be available if you need me, but I'm not going to be watching over your shoulder. If you hit something you'd like to talk through, just come and find me.",
+      managerNote: "A weekly check-in is enough here: keep it light. Let them choose the format: a quick message or a short conversation. Your job is availability and awareness, not close management. Ask one good question each time: what's the thing most likely to slow this down?",
+      delegateeNote: "Let's keep a light weekly check-in: a short message or a quick conversation, whichever works better for you. I want to be available if you need me, but I'm not going to be watching over your shoulder. If you hit something you'd like to talk through, just come and find me.",
     };
   }
   if (medTask && (lowSkill || lowConf)) {
     return {
       frequency: "Weekly structured check-in",
       format: "Structured conversation with agreed action points",
-      rationale: "Skill or confidence gaps on a moderate task. Regular structured contact builds competence and keeps the work on track. This isn't surveillance — it's investment.",
-      managerNote: "A weekly structured check-in with agreed actions at the end of each session. Come prepared with a question or two — don't just ask 'how's it going?' Ask: what's the next decision you need to make? What would help? Keep the sessions short and purposeful. This person is developing, and how you show up in these conversations shapes how fast that happens.",
-      delegateeNote: "Let's meet weekly to review progress and agree next steps. Come with an update and any questions — I'll come with support and any input you need. These sessions are there to help you, not to check up on you. The more honest you are about what you're finding difficult, the more useful I can be.",
+      rationale: "Skill or confidence gaps on a moderate task. Regular structured contact builds competence and keeps the work on track. This isn't surveillance: it's investment.",
+      managerNote: "A weekly structured check-in with agreed actions at the end of each session. Come prepared with a question or two: don't just ask 'how's it going?' Ask: what's the next decision you need to make? What would help? Keep the sessions short and purposeful. This person is developing, and how you show up in these conversations shapes how fast that happens.",
+      delegateeNote: "Let's meet weekly to review progress and agree next steps. Come with an update and any questions: I'll come with support and any input you need. These sessions are there to help you, not to check up on you. The more honest you are about what you're finding difficult, the more useful I can be.",
     };
   }
   if (!highTask && !medTask) {
@@ -154,16 +154,16 @@ function getCadenceGuidance(complexity, importance, skillLevel, confidenceLevel)
       frequency: "At completion",
       format: "Brief verbal or written update when the task is done",
       rationale: "Low complexity and importance. Checking in during the task would be disproportionate. A completion update is enough to close the loop and acknowledge the work.",
-      managerNote: "No scheduled check-ins needed. Ask for a brief update when it's done — what happened, any issues worth noting. If they want to flag something in the meantime, the door is open. Don't manufacture oversight for a task that doesn't need it.",
-      delegateeNote: "No need to check in while you're working on this — just let me know when it's done and give me a brief summary of what happened. If anything comes up that you think I should know about, feel free to flag it, but otherwise it's yours to get on with.",
+      managerNote: "No scheduled check-ins needed. Ask for a brief update when it's done: what happened, any issues worth noting. If they want to flag something in the meantime, the door is open. Don't manufacture oversight for a task that doesn't need it.",
+      delegateeNote: "No need to check in while you're working on this, just let me know when it's done and give me a brief summary of what happened. If anything comes up that you think I should know about, feel free to flag it, but otherwise it's yours to get on with.",
     };
   }
   return {
     frequency: "Weekly check-in",
     format: "Short conversation or written update",
     rationale: "Regular light-touch contact keeps the work visible and the delegatee supported without implying close management.",
-    managerNote: "A weekly check-in — short and purposeful. Ask what's going well and what's getting in the way. Stay available between sessions for anything time-sensitive.",
-    delegateeNote: "Let's keep a weekly check-in in place. Keep it brief — progress, blockers, anything you need from me. I'm available between sessions if something comes up.",
+    managerNote: "A weekly check-in: short and purposeful. Ask what's going well and what's getting in the way. Stay available between sessions for anything time-sensitive.",
+    delegateeNote: "Let's keep a weekly check-in in place. Keep it brief: progress, blockers, anything you need from me. I'm available between sessions if something comes up.",
   };
 }
 
@@ -627,7 +627,7 @@ A goal is SPECIFIC ENOUGH if:
 - It has at least some indication of what success looks like
 - It is scoped enough to act on
 
-Respond in EXACTLY this format — no other text:
+Respond in EXACTLY this format: no other text:
 
 STATUS: [PASS or FAIL]
 REASON: [One plain sentence explaining why it passes or fails. If PASS, say so briefly.]
@@ -660,7 +660,7 @@ INPUTS:
 
 PERSONAL REASON FOR BRIEFING NOTE: ${form.personalReason ? "The manager has given this specific reason for choosing " + form.delegateeName + ": " + form.personalReason + ". Use this directly in the Why you section." : "No personal reason provided. Construct the Why you section from task context, and end it with the note to the manager as instructed."}
 
-CADENCE GUIDANCE (already calculated — use this exactly):
+CADENCE GUIDANCE (already calculated: use this exactly):
 - Recommended frequency: ${c.frequency}
 - Format: ${c.format}
 - Rationale: ${c.rationale}
@@ -675,7 +675,7 @@ DELEGATION LEVELS (1-10):
 5: "Give me your analysis and recommendation. I'll let you know whether you can go ahead."
 6: "Decide and let me know your decision, and wait for my go-ahead before proceeding."
 7: "Decide and let me know your decision, then go ahead unless I say not to."
-8: "Decide and take action — let me know what you did and what happened."
+8: "Decide and take action: let me know what you did and what happened."
 9: "Decide and take action. You need not check back with me."
 10: "Decide where action needs to be taken and manage the situation accordingly. It's your area now."
 
@@ -696,7 +696,7 @@ RULES FOR LEVEL SELECTION:
 8. Support and communicate
 9. Give feedback on results
 
-YOUR RESPONSE MUST USE EXACTLY THIS FORMAT — NO DEVIATIONS:
+YOUR RESPONSE MUST USE EXACTLY THIS FORMAT: NO DEVIATIONS:
 
 DELEGATION_LEVEL: [number only, e.g. 4]
 
@@ -706,56 +706,56 @@ DELEGATION_ADVICE:
 [Write detailed, practical guidance for ${managerNameCapped}. Structure it as follows:
 
 OPENING (write this exactly, substituting the names):
-"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence — for an important project — with a valued member of your team. Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
+"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence: for an important project: with a valued member of your team. Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
 
 LEVEL AND RATIONALE (write this as a short paragraph, 3-5 sentences):
-Name the delegation level chosen and its title (e.g. "Level 4 — Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person — drawing on the task complexity, importance, and where ${delegateeNameCapped} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${delegateeNameCapped} the best possible chance of succeeding with this task."
+Name the delegation level chosen and its title (e.g. "Level 4: Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person: drawing on the task complexity, importance, and where ${delegateeNameCapped} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${delegateeNameCapped} the best possible chance of succeeding with this task."
 
 NAME USAGE: In the DELEGATION_ADVICE section, refer to the delegatee by first name only (${delegateeFirstName}) and the manager by first name only (${managerFirstName}). In the BRIEFING_NOTE, address the delegatee by first name only (${delegateeFirstName}) and refer to the manager by first name only (${managerFirstName}).
 
 NINE STEPS (numbered 1-9, each as a short paragraph):
-Work through each step of the 9-step delegation process with specific, practical guidance for this task and this person. Each step should be a short paragraph — concrete and actionable, not generic. Include the check-in cadence from CADENCE GUIDANCE woven naturally into step 7. Keep each step focused and useful.
+Work through each step of the 9-step delegation process with specific, practical guidance for this task and this person. Each step should be a short paragraph: concrete and actionable, not generic. Include the check-in cadence from CADENCE GUIDANCE woven naturally into step 7. Keep each step focused and useful.
 
 RISKS (one short paragraph):
 Name the one or two most likely risks given this task and this person, and how to mitigate them.
 
-CRITICAL FORMATTING RULES — no exceptions:
+CRITICAL FORMATTING RULES: no exceptions:
 - No markdown of any kind. No bold, no asterisks, no ** characters, no ## or ### headings, no hyphen or bullet lists, no backticks. Plain prose and plain numbered steps only.
 - No exclamation marks. No hashtags or tags of any kind anywhere (never end with something like "#management").
 - Do not invent or state any specific calendar date. Work only from the deadline the manager supplied. For review points and check-ins in step 7, describe them by their cadence (for example "a brief weekly check-in", "a review at the halfway point"), never by inventing an absolute date.
-- Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence. Write contextually — for example: "at this stage with this type of work", "given where ${delegateeNameCapped} is with tasks like this".
+- Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence. Write contextually: for example: "at this stage with this type of work", "given where ${delegateeNameCapped} is with tasks like this".
 - Do not use em dashes in the output: use a comma, a colon, or a full stop instead. Do not use the words "leverage", "empower", "unlock", "journey", "delve", "robust", "seamless", "inspire", or the phrase "moving forward".
 - Write in plain, direct UK English. Short sentences. No consultant language.]
 
 BRIEFING_NOTE:
 [Write a structured briefing note addressed directly to ${delegateeNameCapped}. It is designed to guide a face-to-face or phone conversation, and to be shared afterwards as a written record. Use first-person manager voice throughout.
 
-Structure it in five clear sections with plain text headings (no bold, no markdown — just the heading on its own line followed by the text):
+Structure it in five clear sections with plain text headings (no bold, no markdown, just the heading on its own line followed by the text):
 
 The task
-What the task is, what it involves, and why it matters — specifically, what is at stake for the team or organisation. Be concrete.
+What the task is, what it involves, and why it matters: specifically, what is at stake for the team or organisation. Be concrete.
 
 Why you
-A genuine explanation of why ${delegateeNameCapped} has been chosen. Draw on the task description and context. If the manager has provided a specific reason in the PERSONAL REASON field below, use it directly and build around it — this is the most important input for this section. If no personal reason was provided, draw on the task context to construct the most specific case you can, and end this section with this exact line on its own: "Note for ${managerNameCapped}: the Why you section works best with a personal detail only you know. Consider adding one before you share this with ${delegateeNameCapped}."
+A genuine explanation of why ${delegateeNameCapped} has been chosen. Draw on the task description and context. If the manager has provided a specific reason in the PERSONAL REASON field below, use it directly and build around it: this is the most important input for this section. If no personal reason was provided, draw on the task context to construct the most specific case you can, and end this section with this exact line on its own: "Note for ${managerNameCapped}: the Why you section works best with a personal detail only you know. Consider adding one before you share this with ${delegateeNameCapped}."
 
 How I will work with you
-Explain the delegation approach clearly — the level of freedom ${delegateeNameCapped} has, what decisions are theirs to make, and what needs to come back to ${managerNameCapped}. Be explicit that ${managerNameCapped} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
+Explain the delegation approach clearly: the level of freedom ${delegateeNameCapped} has, what decisions are theirs to make, and what needs to come back to ${managerNameCapped}. Be explicit that ${managerNameCapped} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
 
 What success looks like and what we will agree together
-Set out the specific success criteria for this task — the measurable outcomes — and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${delegateeNameCapped} can work towards them with confidence, clear on what good looks like. Mention that resourcing — budgets, contacts, access — will also be agreed in that first meeting so there are no blockers.
+Set out the specific success criteria for this task: the measurable outcomes, and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${delegateeNameCapped} can work towards them with confidence, clear on what good looks like. Mention that resourcing: budgets, contacts, access: will also be agreed in that first meeting so there are no blockers.
 
 The process from here
-Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${delegateeNameCapped} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need — not to monitor them.
+Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${delegateeNameCapped} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need: not to monitor them.
 
-Close with a short paragraph about the first meeting. The tone is quiet and direct — the voice of a manager who has thought about this carefully and is clear about their decision. No rallying cry, no motivational language. Something closer to: "I have thought about this carefully and I think you are the right person for it. Come with your questions, come with your concerns, and come ready to shape this so it works for you. That is what the first meeting is for." It should feel like the end of a considered conversation, not the start of a motivational speech.
+Close with a short paragraph about the first meeting. The tone is quiet and direct: the voice of a manager who has thought about this carefully and is clear about their decision. No rallying cry, no motivational language. Something closer to: "I have thought about this carefully and I think you are the right person for it. Come with your questions, come with your concerns, and come ready to shape this so it works for you. That is what the first meeting is for." It should feel like the end of a considered conversation, not the start of a motivational speech.
 
-CRITICAL FORMATTING RULES — no exceptions:
+CRITICAL FORMATTING RULES: no exceptions:
 - No markdown of any kind. No bold, no asterisks, no ** characters, no ## or ### headings, no bullet lists, no backticks. Section headings on their own line as plain text, then paragraph prose beneath.
 - No exclamation marks. No hashtags or tags of any kind anywhere.
 - Do not invent or state any specific calendar date. Use only the deadline the manager supplied (${form.deadline || "as discussed"}); refer to review points by their cadence, never by a fabricated date.
 - Never use the words "low", "medium", or "high" to describe ${delegateeNameCapped}'s skill or confidence.
 - Do not use em dashes in the output: use a comma, a colon, or a full stop instead. Do not use the words "leverage", "empower", "unlock", "journey", "delve", "robust", "seamless", "inspire", or the phrase "moving forward".
-- Write in plain, direct UK English. Warm, direct, and respectful — not gushing. The tone should make ${delegateeNameCapped} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
+- Write in plain, direct UK English. Warm, direct, and respectful: not gushing. The tone should make ${delegateeNameCapped} feel honoured, supported, and capable even if the task feels stretching. Minimum 500 words.]
 `;
   };
 
