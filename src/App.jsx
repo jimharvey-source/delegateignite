@@ -13,25 +13,37 @@ const supabase = createSuiteClient({
   anonKey: "sb_publishable_JQMFDaTz5g-2ZlitosUTeA_C9B48-Lc",
 });
 
+// Management Ignition design system, 4 October 2026. Same names, new values.
+// Teal (accent) is the method speaking: never a button fill, never a link.
+// The tool colour is an identity mark only: the 3px top line and the dot.
 const COLORS = {
-  navy: "#0F2A4A",
-  navyMid: "#1A3D6B",
-  blue: "#2563EB",
-  blueLight: "#EFF6FF",
-  teal: "#0D9488",
-  tealLight: "#F0FDFA",
-  slate: "#64748B",
-  slateLight: "#F8FAFC",
-  border: "#E2E8F0",
-  text: "#0F172A",
-  muted: "#64748B",
-  white: "#FFFFFF",
-  amber: "#D97706",
-  amberLight: "#FFFBEB",
-  red: "#DC2626",
-  green: "#16A34A",
-  greenLight: "#F0FDF4",
+  navy: "#1b2a4a",        // ink: headlines, primary buttons
+  navyMid: "#2a3d63",     // ink-2: body copy
+  blue: "#2a3d63",
+  blueLight: "#eef2f6",
+  teal: "#0e7c7b",        // accent
+  tealLight: "#e9f3f3",   // accent-soft; text on it is ink
+  slate: "#5d6b7f",
+  slateLight: "#f6f8fb",  // canvas
+  border: "#e2e7ee",      // rule
+  text: "#1b2a4a",
+  muted: "#5d6b7f",
+  white: "#ffffff",
+  amber: "#8a5300",       // warn
+  amberLight: "#fff3e0",
+  red: "#b3261e",         // danger
+  green: "#1e6b45",
+  greenLight: "#e8f4ec",
+  canvas: "#f6f8fb",
+  sunk: "#eef2f6",
+  tool: "#0077b6",        // Delegate Ignite
 };
+
+const FONT = {
+  sans: '"Instrument Sans", -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif',
+  spoken: 'Fraunces, "Iowan Old Style", Georgia, serif',
+};
+const SHADOW = "0 1px 2px rgba(27,42,74,0.05), 0 18px 44px -28px rgba(27,42,74,0.30)";
 
 const LEVEL_DESCRIPTIONS = [
   { level: 1, label: "Follow precisely", desc: "Do exactly what I say" },
@@ -204,32 +216,31 @@ function saveLocalDelegation(data) {
 
 // ── UI Components ───────────────────────────────────────────────────────────
 function Badge({ color, children }) {
-  const styles = { blue: { bg: COLORS.blueLight, text: COLORS.blue }, teal: { bg: COLORS.tealLight, text: COLORS.teal }, amber: { bg: COLORS.amberLight, text: COLORS.amber }, green: { bg: COLORS.greenLight, text: COLORS.green } };
+  const styles = { blue: { bg: COLORS.sunk, text: COLORS.navyMid }, teal: { bg: COLORS.tealLight, text: COLORS.navy }, amber: { bg: COLORS.amberLight, text: COLORS.amber }, green: { bg: COLORS.greenLight, text: COLORS.green } };
   const s = styles[color] || styles.blue;
-  return <span style={{ background: s.bg, color: s.text, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.04em", textTransform: "uppercase" }}>{children}</span>;
+  return <span style={{ background: s.bg, color: s.text, fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 999, letterSpacing: "0.01em", fontFamily: FONT.sans }}>{children}</span>;
 }
 
 function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
   if (!cadence) return null;
   const canSchedule = !cadence.frequency.toLowerCase().includes("completion");
   return (
-    <div style={{ background: COLORS.tealLight, border: `1px solid ${COLORS.teal}`, borderRadius: 12, padding: "18px 22px", marginBottom: 20 }}>
+    <div style={{ background: COLORS.tealLight, borderRadius: 10, padding: "20px 24px", marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: COLORS.teal, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>🔁</div>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: COLORS.teal, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Recommended cadence</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, letterSpacing: "0.01em", margin: "0 0 2px" }}>Recommended cadence</p>
             <p style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: 0 }}>{cadence.frequency}</p>
           </div>
         </div>
         {canSchedule && (
-          <button onClick={() => generateICS({ taskTitle, delegateeName, managerName, cadence })} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", background: COLORS.teal, color: "#fff", border: "none", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif", whiteSpace: "nowrap" }}>
-            <span style={{ fontSize: 14 }}>📅</span> Add to calendar
+          <button onClick={() => generateICS({ taskTitle, delegateeName, managerName, cadence })} style={{ display: "flex", alignItems: "center", minHeight: 40, padding: "0 18px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: FONT.sans, whiteSpace: "nowrap" }}>
+            Add to calendar
           </button>
         )}
       </div>
-      <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: "sans-serif" }}><strong>Format:</strong> {cadence.format}</p>
-      <p style={{ fontSize: 13, color: COLORS.muted, lineHeight: 1.6, margin: 0, fontStyle: "italic", fontFamily: "sans-serif" }}>{cadence.rationale}</p>
+      <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: FONT.sans }}><strong>Format:</strong> {cadence.format}</p>
+      <p style={{ fontSize: 13, color: COLORS.navyMid, lineHeight: 1.6, margin: 0, fontFamily: FONT.sans }}>{cadence.rationale}</p>
     </div>
   );
 }
@@ -239,17 +250,17 @@ function LevelMeter({ level }) {
   const lvl = parseInt(level);
   const info = LEVEL_DESCRIPTIONS[lvl - 1];
   const pct = (lvl / 10) * 100;
-  const color = lvl <= 3 ? COLORS.blue : lvl <= 6 ? COLORS.teal : lvl <= 8 ? COLORS.amber : COLORS.green;
+  const color = COLORS.teal;
   return (
-    <div style={{ background: COLORS.slateLight, borderRadius: 12, padding: "20px 24px", border: `1px solid ${COLORS.border}`, marginBottom: 20 }}>
+    <div style={{ background: COLORS.white, borderRadius: 10, padding: "20px 24px", border: `1px solid ${COLORS.border}`, marginBottom: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>Delegation Level</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: 0 }}>{lvl} — {info?.label}</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted, letterSpacing: "0.01em", margin: "0 0 4px" }}>Delegation level</p>
+          <p style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", color: COLORS.navy, margin: 0 }}>Level {lvl}: {info?.label}</p>
         </div>
-        <div style={{ background: color, color: "#fff", fontSize: 28, fontWeight: 800, width: 52, height: 52, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>{lvl}</div>
+        <div style={{ background: COLORS.navy, color: "#fff", fontSize: 26, fontWeight: 600, width: 52, height: 52, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>{lvl}</div>
       </div>
-      <div style={{ background: COLORS.border, borderRadius: 4, height: 6, overflow: "hidden" }}>
+      <div style={{ background: COLORS.sunk, borderRadius: 999, height: 6, overflow: "hidden" }}>
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 4, transition: "width 0.6s ease" }} />
       </div>
       <p style={{ fontSize: 13, color: COLORS.muted, margin: "8px 0 0" }}>{info?.desc}</p>
@@ -257,42 +268,44 @@ function LevelMeter({ level }) {
   );
 }
 
-function OutputBox({ title, content, badge }) {
+function OutputBox({ title, content, badge, spoken }) {
   const [copied, setCopied] = useState(false);
   const [text, setText] = useState(content);
   useEffect(() => { setText(content); }, [content]);
   const copy = () => { navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); };
   const emailIt = () => {
-    const subject = encodeURIComponent(`DelegateIgnite: ${title}`);
+    const subject = encodeURIComponent(`Delegate Ignite: ${title}`);
     const body = encodeURIComponent(text);
     const link = document.createElement("a");
     link.href = `mailto:?subject=${subject}&body=${body}`;
     link.target = "_blank";
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
-  const shareIt = async () => { if (navigator.share) { try { await navigator.share({ title: `DelegateIgnite: ${title}`, text }); } catch { emailIt(); } } else { emailIt(); } };
+  const shareIt = async () => { if (navigator.share) { try { await navigator.share({ title: `Delegate Ignite: ${title}`, text }); } catch { emailIt(); } } else { emailIt(); } };
   return (
-    <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
-      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: COLORS.slateLight }}>
+    <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${COLORS.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", background: COLORS.white }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy }}>{title}</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: COLORS.navy }}>{title}</span>
           {badge && <Badge color={badge.color}>{badge.label}</Badge>}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={copy} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: copied ? COLORS.greenLight : COLORS.white, color: copied ? COLORS.green : COLORS.slate, cursor: "pointer", fontWeight: 500 }}>{copied ? "Copied" : "Copy"}</button>
-          <button onClick={shareIt} style={{ fontSize: 12, padding: "5px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 6, background: COLORS.white, color: COLORS.slate, cursor: "pointer", fontWeight: 500 }}>Share</button>
+          <button onClick={copy} style={{ fontSize: 13, minHeight: 36, padding: "0 14px", border: `1px solid ${COLORS.border}`, borderRadius: 10, background: copied ? COLORS.greenLight : COLORS.white, color: copied ? COLORS.green : COLORS.navy, cursor: "pointer", fontWeight: 500, fontFamily: FONT.sans }}>{copied ? "Copied" : "Copy"}</button>
+          <button onClick={shareIt} style={{ fontSize: 13, minHeight: 36, padding: "0 14px", border: `1px solid ${COLORS.border}`, borderRadius: 10, background: COLORS.white, color: COLORS.navy, cursor: "pointer", fontWeight: 500, fontFamily: FONT.sans }}>Share</button>
         </div>
       </div>
-      <textarea value={text} onChange={e => setText(e.target.value)} style={{ width: "100%", minHeight: 280, padding: "16px 20px", border: "none", outline: "none", resize: "vertical", fontSize: 13.5, lineHeight: 1.7, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white }} />
+      <textarea value={text} onChange={e => setText(e.target.value)} style={spoken
+        ? { width: "100%", minHeight: 320, padding: "24px 28px", border: "none", outline: "none", resize: "vertical", fontSize: 19, lineHeight: "30px", color: COLORS.navy, fontFamily: FONT.spoken, fontVariationSettings: '"SOFT" 0, "WONK" 0', fontWeight: 400, boxSizing: "border-box", background: COLORS.white }
+        : { width: "100%", minHeight: 280, padding: "20px 24px", border: "none", outline: "none", resize: "vertical", fontSize: 15, lineHeight: 1.65, color: COLORS.navyMid, fontFamily: FONT.sans, boxSizing: "border-box", background: COLORS.white }} />
     </div>
   );
 }
 
 function TextField({ label, value, onChange, placeholder, multiline, required }) {
-  const style = { width: "100%", padding: "9px 12px", border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 14, color: COLORS.text, background: COLORS.white, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
+  const style = { width: "100%", minHeight: 44, padding: "10px 16px", border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 15, color: COLORS.text, background: COLORS.white, boxSizing: "border-box", fontFamily: FONT.sans };
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6 }}>{label}{required && <span style={{ color: COLORS.red }}> *</span>}</label>
+      {label && <label style={{ display: "block", fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", color: COLORS.muted, marginBottom: 8 }}>{label}{required && <span style={{ color: COLORS.red }}> *</span>}</label>}
       {multiline ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3} style={{ ...style, resize: "vertical" }} /> : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={style} />}
     </div>
   );
@@ -301,10 +314,10 @@ function TextField({ label, value, onChange, placeholder, multiline, required })
 function ToggleGroup({ label, value, onChange, options }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 8 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", color: COLORS.muted, marginBottom: 8 }}>{label}</label>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {options.map(o => (
-          <button key={o.value} onClick={() => onChange(o.value)} style={{ padding: "7px 16px", border: `1.5px solid ${value === o.value ? COLORS.blue : COLORS.border}`, borderRadius: 8, background: value === o.value ? COLORS.blueLight : COLORS.white, color: value === o.value ? COLORS.blue : COLORS.slate, fontSize: 13, fontWeight: value === o.value ? 600 : 400, cursor: "pointer", transition: "all 0.15s" }}>{o.label}</button>
+          <button key={o.value} onClick={() => onChange(o.value)} aria-pressed={value === o.value} style={{ minHeight: 40, padding: "0 18px", border: `1px solid ${value === o.value ? COLORS.navy : COLORS.border}`, boxShadow: value === o.value ? `inset 0 0 0 1px ${COLORS.navy}` : "none", borderRadius: 10, background: value === o.value ? COLORS.sunk : COLORS.white, color: COLORS.navy, fontSize: 14, fontWeight: value === o.value ? 600 : 400, cursor: "pointer", fontFamily: FONT.sans, transition: "all 0.15s" }}>{o.label}</button>
         ))}
       </div>
     </div>
@@ -331,14 +344,13 @@ function AuthModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-      <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 420, width: "100%" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(27,42,74,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+      <div style={{ background: COLORS.white, borderRadius: 22, boxShadow: SHADOW, padding: "40px 36px", maxWidth: 420, width: "100%" }}>
         {!sent ? (
           <>
             <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <div style={{ width: 52, height: 52, background: COLORS.tealLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 22 }}>✉️</div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>Sign in to DelegateIgnite</h2>
-              <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, fontFamily: "sans-serif", lineHeight: 1.6 }}>Enter your email and we'll send you a magic link. No password needed.</p>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: FONT.sans }}>Sign in to Delegate Ignite</h2>
+              <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, fontFamily: FONT.sans, lineHeight: 1.6 }}>Enter your email and we'll send you a magic link. No password needed.</p>
             </div>
             <input
               type="email"
@@ -346,20 +358,19 @@ function AuthModal({ onClose, onSuccess }) {
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && sendMagicLink()}
               placeholder="your@email.com"
-              style={{ width: "100%", padding: "10px 14px", border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 14, color: COLORS.text, outline: "none", boxSizing: "border-box", fontFamily: "sans-serif", marginBottom: 12 }}
+              style={{ width: "100%", minHeight: 44, padding: "10px 16px", border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 15, color: COLORS.text, boxSizing: "border-box", fontFamily: FONT.sans, marginBottom: 12 }}
             />
-            {error && <p style={{ fontSize: 13, color: COLORS.red, margin: "0 0 10px", fontFamily: "sans-serif" }}>{error}</p>}
-            <button onClick={sendMagicLink} disabled={loading} style={{ width: "100%", padding: "11px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "sans-serif", marginBottom: 10 }}>
+            {error && <p style={{ fontSize: 13, color: COLORS.red, margin: "0 0 10px", fontFamily: FONT.sans }}>{error}</p>}
+            <button onClick={sendMagicLink} disabled={loading} style={{ width: "100%", minHeight: 44, padding: "0 24px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: FONT.sans, marginBottom: 10 }}>
               {loading ? "Sending..." : "Send magic link"}
             </button>
-            <button onClick={onClose} style={{ width: "100%", background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>Cancel</button>
+            <button onClick={onClose} style={{ width: "100%", background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: FONT.sans }}>Cancel</button>
           </>
         ) : (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>📬</div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 10px", fontFamily: "sans-serif" }}>Check your email</h2>
-            <p style={{ fontSize: 14, color: COLORS.muted, lineHeight: 1.6, margin: "0 0 20px", fontFamily: "sans-serif" }}>We've sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
-            <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>Close</button>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.navy, margin: "0 0 10px", fontFamily: FONT.sans }}>Check your email</h2>
+            <p style={{ fontSize: 14, color: COLORS.muted, lineHeight: 1.6, margin: "0 0 20px", fontFamily: FONT.sans }}>We've sent a magic link to <strong>{email}</strong>. Click it to sign in.</p>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", fontFamily: FONT.sans }}>Close</button>
           </div>
         )}
       </div>
@@ -372,7 +383,7 @@ function UpgradeModal({ onClose, triggered }) {
   const [checkoutError, setCheckoutError] = useState("");
   const plans = [
     { id: "monthly", name: "Monthly", price: "£4.99", period: "/month", desc: "Full access, cancel anytime.", highlight: false },
-    { id: "annual", name: "Annual", price: "£59.99", period: "/year", desc: "Best value — two months free.", highlight: true },
+    { id: "annual", name: "Annual", price: "£59.99", period: "/year", desc: "Best value: two months free.", highlight: true },
     { id: "lifetime", name: "Lifetime", price: "£49.99", period: "one-off", desc: "Pay once, use forever.", highlight: false },
   ];
   const handleCheckout = async (planId) => {
@@ -386,39 +397,38 @@ function UpgradeModal({ onClose, triggered }) {
     } catch { setCheckoutError("Something went wrong. Please try again."); setLoadingPlan(null); }
   };
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-      <div style={{ background: COLORS.white, borderRadius: 16, padding: "36px 32px", maxWidth: 520, width: "100%" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(27,42,74,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+      <div style={{ background: COLORS.white, borderRadius: 22, boxShadow: SHADOW, padding: "40px 36px", maxWidth: 520, width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ width: 52, height: 52, background: COLORS.amberLight, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 22 }}>★</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: "sans-serif" }}>{triggered === "limit" ? "You've used your 3 free delegations" : triggered === "pdf" ? "Download this as a branded PDF" : "Unlock DelegateIgnite"}</h2>
-          <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>{triggered === "pdf" ? "Pro lets you download the complete delegation, inputs, level, cadence and both notes, as a branded PDF for your records." : "Unlimited delegations, cadence guidance, calendar integration, and briefing notes."}</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: COLORS.navy, margin: "0 0 8px", fontFamily: FONT.sans }}>{triggered === "limit" ? "You've used your 3 free delegations" : triggered === "pdf" ? "Download this as a branded PDF" : "Delegate Ignite Pro"}</h2>
+          <p style={{ fontSize: 14, color: COLORS.muted, margin: 0, lineHeight: 1.6, fontFamily: FONT.sans }}>{triggered === "pdf" ? "Pro lets you download the complete delegation, inputs, level, cadence and both notes, as a branded PDF for your records." : "Unlimited delegations, cadence guidance, calendar integration, and briefing notes."}</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
           {plans.map(plan => (
-            <div key={plan.id} style={{ border: `${plan.highlight ? 2 : 1}px solid ${plan.highlight ? COLORS.teal : COLORS.border}`, borderRadius: 10, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: plan.highlight ? COLORS.tealLight : COLORS.white, gap: 12, flexWrap: "wrap" }}>
+            <div key={plan.id} style={{ border: `1px solid ${plan.highlight ? COLORS.navy : COLORS.border}`, boxShadow: plan.highlight ? `inset 0 0 0 1px ${COLORS.navy}` : "none", borderRadius: 10, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: COLORS.white, gap: 12, flexWrap: "wrap" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, fontFamily: "sans-serif" }}>{plan.name}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, fontFamily: FONT.sans }}>{plan.name}</span>
                   {plan.highlight && <Badge color="teal">Most popular</Badge>}
                 </div>
-                <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>{plan.desc}</p>
+                <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, fontFamily: FONT.sans }}>{plan.desc}</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                 <div style={{ textAlign: "right" }}>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, fontFamily: "sans-serif" }}>{plan.price}</span>
-                  <span style={{ fontSize: 12, color: COLORS.muted, fontFamily: "sans-serif" }}> {plan.period}</span>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, fontFamily: FONT.sans }}>{plan.price}</span>
+                  <span style={{ fontSize: 12, color: COLORS.muted, fontFamily: FONT.sans }}> {plan.period}</span>
                 </div>
-                <button onClick={() => handleCheckout(plan.id)} disabled={!!loadingPlan} style={{ padding: "8px 18px", background: plan.highlight ? COLORS.teal : COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: loadingPlan ? "not-allowed" : "pointer", fontFamily: "sans-serif", opacity: loadingPlan && loadingPlan !== plan.id ? 0.5 : 1, minWidth: 80 }}>
+                <button onClick={() => handleCheckout(plan.id)} disabled={!!loadingPlan} style={{ minHeight: 40, padding: "0 18px", background: plan.highlight ? COLORS.navy : COLORS.white, color: plan.highlight ? "#fff" : COLORS.navy, border: `1px solid ${plan.highlight ? COLORS.navy : COLORS.border}`, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: loadingPlan ? "not-allowed" : "pointer", fontFamily: FONT.sans, opacity: loadingPlan && loadingPlan !== plan.id ? 0.5 : 1, minWidth: 80 }}>
                   {loadingPlan === plan.id ? "..." : "Select"}
                 </button>
               </div>
             </div>
           ))}
         </div>
-        {checkoutError && <p style={{ fontSize: 13, color: COLORS.red, textAlign: "center", margin: "0 0 12px", fontFamily: "sans-serif" }}>{checkoutError}</p>}
+        {checkoutError && <p style={{ fontSize: 13, color: COLORS.red, textAlign: "center", margin: "0 0 12px", fontFamily: FONT.sans }}>{checkoutError}</p>}
         <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Secure payment by Stripe. Cancel subscriptions anytime.</p>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: "sans-serif" }}>Maybe later</button>
+          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: FONT.sans }}>Secure payment by Stripe. Cancel subscriptions anytime.</p>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted, fontSize: 13, cursor: "pointer", padding: 4, fontFamily: FONT.sans }}>Maybe later</button>
         </div>
       </div>
     </div>
@@ -427,7 +437,7 @@ function UpgradeModal({ onClose, triggered }) {
 
 function HistoryPanel({ items, onClose }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(15,42,74,0.7)", display: "flex", alignItems: "flex-start", justifyContent: "flex-end", zIndex: 1000, padding: 0 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(27,42,74,0.45)", display: "flex", alignItems: "flex-start", justifyContent: "flex-end", zIndex: 1000, padding: 0 }}>
       <div style={{ background: COLORS.white, width: "100%", maxWidth: 460, height: "100vh", overflowY: "auto", padding: "28px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0 }}>Saved delegations</h3>
@@ -872,38 +882,40 @@ CRITICAL FORMATTING RULES — no exceptions:
   const remaining = isPro ? null : Math.max(0, FREE_LIMIT - usageCount);
 
   return (
-    <div style={{ fontFamily: "'Georgia', serif", background: "#F8FAFC", minHeight: "100vh" }}>
+    <div style={{ fontFamily: FONT.sans, background: COLORS.canvas, color: COLORS.text, minHeight: "100vh" }}>
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} triggered={upgradeTrigger} />}
       {showHistory && <HistoryPanel items={history} onClose={() => setShowHistory(false)} />}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />}
 
       {showSuccessBanner && (
-        <div style={{ background: COLORS.green, padding: "12px 24px", textAlign: "center" }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", margin: 0, fontFamily: "sans-serif" }}>Payment successful — you now have unlimited access. Welcome to DelegateIgnite Pro.</p>
+        <div style={{ background: COLORS.tealLight, padding: "12px 24px", textAlign: "center" }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: COLORS.navy, margin: 0, fontFamily: FONT.sans }}>Payment successful. You now have unlimited access to Delegate Ignite Pro.</p>
         </div>
       )}
 
       {/* Header */}
-      <div style={{ background: COLORS.navy, padding: "0 24px" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>DelegateIgnite</span>
-            <Badge color={isPro ? "green" : "amber"}>{isPro ? "Pro" : "Beta"}</Badge>
+      <div style={{ height: 3, background: COLORS.tool }} />
+      <div style={{ background: COLORS.canvas, borderBottom: `1px solid ${COLORS.border}`, padding: "0 24px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 68, gap: 12, flexWrap: "wrap", padding: "10px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img src="/mi-mark.svg" alt="" width="26" height="26" style={{ display: "block" }} />
+            <span style={{ fontSize: 18, fontWeight: 600, color: COLORS.navy, letterSpacing: "-0.02em" }}>Delegate Ignite</span>
+            <Badge color={isPro ? "green" : "blue"}>{isPro ? "Pro" : "Beta"}</Badge>
           </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: "sans-serif" }}>History</button>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <button onClick={() => setShowHistory(true)} style={{ background: "none", border: "none", color: COLORS.navyMid, fontSize: 14, fontWeight: 500, cursor: "pointer", padding: "8px 6px", fontFamily: FONT.sans }}>History</button>
             {user ? (
               <>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "sans-serif" }}>{user.email}</span>
-                <button onClick={signOut} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign out</button>
+                <span style={{ fontSize: 13, color: COLORS.muted, fontFamily: FONT.sans }}>{user.email}</span>
+                <button onClick={signOut} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, minHeight: 36, padding: "0 14px", fontSize: 14, color: COLORS.navy, fontFamily: FONT.sans, cursor: "pointer" }}>Sign out</button>
               </>
             ) : (
-              <button onClick={() => setShowAuth(true)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: "sans-serif", cursor: "pointer" }}>Sign in</button>
+              <button onClick={() => setShowAuth(true)} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, minHeight: 36, padding: "0 14px", fontSize: 14, color: COLORS.navy, fontFamily: FONT.sans, cursor: "pointer" }}>Sign in</button>
             )}
             {!isPro && (
               <>
-                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "sans-serif" }}>{remaining} free {remaining === 1 ? "use" : "uses"} left</div>
-                <button onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }} style={{ background: COLORS.teal, border: "none", borderRadius: 20, padding: "5px 14px", fontSize: 12, color: "#fff", fontFamily: "sans-serif", fontWeight: 600, cursor: "pointer" }}>Upgrade</button>
+                <span style={{ background: COLORS.sunk, borderRadius: 999, padding: "4px 12px", fontSize: 13, color: COLORS.navyMid, fontFamily: FONT.sans }}>{remaining} free {remaining === 1 ? "use" : "uses"} left</span>
+                <button onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }} style={{ background: COLORS.navy, border: "none", borderRadius: 10, minHeight: 36, padding: "0 16px", fontSize: 14, color: "#fff", fontFamily: FONT.sans, fontWeight: 600, cursor: "pointer" }}>Upgrade</button>
               </>
             )}
           </div>
@@ -911,10 +923,10 @@ CRITICAL FORMATTING RULES — no exceptions:
       </div>
 
       {/* Hero */}
-      <div style={{ background: COLORS.navy, borderBottom: `3px solid ${COLORS.teal}`, paddingBottom: 32 }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "28px 24px 0" }}>
-          <h1 style={{ fontSize: 30, fontWeight: 700, color: "#fff", margin: "0 0 10px", lineHeight: 1.25, letterSpacing: "-0.02em" }}>Delegate better.<br />Every time.</h1>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", margin: 0, lineHeight: 1.6, fontFamily: "sans-serif" }}>Match the task to the person. Get a practical delegation guide and a ready-to-use briefing note in seconds.</p>
+      <div style={{ background: COLORS.canvas }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", padding: "48px 24px 8px" }}>
+          <h1 style={{ fontSize: "clamp(32px, 6vw, 40px)", fontWeight: 600, color: COLORS.navy, margin: "0 0 12px", lineHeight: 1.1, letterSpacing: "-0.03em" }}>Delegate better.<br />Every time.</h1>
+          <p style={{ fontSize: 18, lineHeight: "28px", color: COLORS.navyMid, margin: 0, maxWidth: "40rem", fontFamily: FONT.sans }}>Match the task to the person. Get a practical delegation guide and a ready-to-use briefing note in seconds.</p>
         </div>
       </div>
 
@@ -922,9 +934,9 @@ CRITICAL FORMATTING RULES — no exceptions:
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "28px 24px 60px" }}>
 
         {/* Form card */}
-        <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "28px 28px", marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: COLORS.navy, margin: "0 0 22px", fontFamily: "sans-serif", borderBottom: `1px solid ${COLORS.border}`, paddingBottom: 14 }}>The delegation</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
+        <div style={{ background: COLORS.white, borderRadius: 22, boxShadow: SHADOW, padding: "clamp(24px, 5vw, 48px)", marginBottom: 32 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em", color: COLORS.navy, margin: "0 0 24px", fontFamily: FONT.sans }}>The delegation</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0 20px" }}>
             <TextField label="Manager name" value={form.managerName} onChange={f("managerName")} placeholder="Your name" required />
             <TextField label="Delegatee name" value={form.delegateeName} onChange={f("delegateeName")} placeholder="Their name" required />
           </div>
@@ -934,48 +946,48 @@ CRITICAL FORMATTING RULES — no exceptions:
           <TextField label="Deadline" value={form.deadline} onChange={f("deadline")} placeholder="e.g. Friday 4pm / end of month" />
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 16px", fontFamily: "sans-serif" }}>Task profile</h3>
+            <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.navy, margin: "0 0 16px", fontFamily: FONT.sans }}>Task profile</h3>
             <ToggleGroup label="Complexity" value={form.complexity} onChange={f("complexity")} options={[{ value: "Simple", label: "Simple" }, { value: "Moderate", label: "Moderate" }, { value: "Complex", label: "Complex" }]} />
             <ToggleGroup label="Importance" value={form.importance} onChange={f("importance")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
           </div>
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 16px", fontFamily: "sans-serif" }}>About {form.delegateeName || "the delegatee"}</h3>
+            <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.navy, margin: "0 0 16px", fontFamily: FONT.sans }}>About {form.delegateeName || "the delegatee"}</h3>
             <ToggleGroup label="Skill level for this type of task" value={form.skillLevel} onChange={f("skillLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
             <ToggleGroup label="Confidence level" value={form.confidenceLevel} onChange={f("confidenceLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
           </div>
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>Why this person for this task?</h3>
-            <p style={{ fontSize: 12.5, color: COLORS.muted, margin: "0 0 10px", fontFamily: "sans-serif", fontStyle: "italic", lineHeight: 1.5 }}>Optional. The ‘Why you’ section works best with a personal detail only you know. Add it here and it will be woven into the briefing note.</p>
+            <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.navy, margin: "0 0 4px", fontFamily: FONT.sans }}>Why this person for this task?</h3>
+            <p style={{ fontSize: 14, color: COLORS.navyMid, margin: "0 0 12px", fontFamily: FONT.sans, lineHeight: "20px" }}>Optional. The ‘Why you’ section works best with a personal detail only you know. Add it here and it will be woven into the briefing note.</p>
             <TextField label="" value={form.personalReason} onChange={f("personalReason")} placeholder="e.g. I have seen how you handled the Barclays account and I think you are ready for this." multiline />
           </div>
 
           {cadence && (
             <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 12px", fontFamily: "sans-serif" }}>Suggested check-in cadence</h3>
-              <div style={{ background: COLORS.tealLight, border: `1px solid ${COLORS.teal}`, borderRadius: 10, padding: "14px 18px" }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.teal, margin: "0 0 4px", fontFamily: "sans-serif" }}>{cadence.frequency}</p>
-                <p style={{ fontSize: 13, color: COLORS.text, margin: "0 0 6px", fontFamily: "sans-serif" }}>{cadence.format}</p>
-                <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, fontStyle: "italic", fontFamily: "sans-serif", lineHeight: 1.5 }}>{cadence.rationale}</p>
+              <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.navy, margin: "0 0 12px", fontFamily: FONT.sans }}>Suggested check-in cadence</h3>
+              <div style={{ background: COLORS.tealLight, borderRadius: 10, padding: "16px 20px" }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: COLORS.navy, margin: "0 0 4px", fontFamily: FONT.sans }}>{cadence.frequency}</p>
+                <p style={{ fontSize: 13, color: COLORS.text, margin: "0 0 6px", fontFamily: FONT.sans }}>{cadence.format}</p>
+                <p style={{ fontSize: 13, color: COLORS.navyMid, margin: 0, fontFamily: FONT.sans, lineHeight: 1.5 }}>{cadence.rationale}</p>
               </div>
             </div>
           )}
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 16, marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: COLORS.muted, fontFamily: "sans-serif" }}>
-              <input type="checkbox" checked={form.saveLocally} onChange={e => setForm(p => ({ ...p, saveLocally: e.target.checked }))} style={{ width: 15, height: 15 }} />
+            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 14, color: COLORS.navyMid, fontFamily: FONT.sans }}>
+              <input type="checkbox" checked={form.saveLocally} onChange={e => setForm(p => ({ ...p, saveLocally: e.target.checked }))} style={{ width: 18, height: 18, accentColor: COLORS.navy }} />
               Save this delegation to history
             </label>
-            {error && <p style={{ fontSize: 13, color: COLORS.red, margin: 0, fontFamily: "sans-serif" }}>{error}</p>}
+            {error && <p style={{ fontSize: 13, color: COLORS.red, margin: 0, fontFamily: FONT.sans }}>{error}</p>}
           </div>
 
-          <button onClick={generate} disabled={loading} style={{ width: "100%", marginTop: 16, padding: "14px", background: loading ? COLORS.slate : COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "sans-serif", letterSpacing: "0.01em", transition: "background 0.2s" }}>
+          <button onClick={generate} disabled={loading} style={{ width: "100%", marginTop: 20, minHeight: 52, padding: "0 24px", background: COLORS.navy, opacity: loading ? 0.7 : 1, color: "#fff", border: "none", borderRadius: 10, fontSize: 16, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: FONT.sans, transition: "opacity 0.2s" }}>
             {loading ? "Generating your delegation guide..." : "Generate delegation guide"}
           </button>
 
           {!isPro && remaining <= 1 && !loading && (
-            <p style={{ textAlign: "center", fontSize: 12, color: COLORS.amber, marginTop: 10, fontFamily: "sans-serif" }}>
+            <p style={{ textAlign: "center", fontSize: 12, color: COLORS.amber, marginTop: 10, fontFamily: FONT.sans }}>
               {remaining === 0 ? "You've used all free delegations." : "Last free delegation."}{" "}
               <span style={{ textDecoration: "underline", cursor: "pointer" }} onClick={() => { setUpgradeTrigger("limit"); setShowUpgrade(true); }}>Upgrade for unlimited access.</span>
             </p>
@@ -984,21 +996,20 @@ CRITICAL FORMATTING RULES — no exceptions:
 
         {/* Goal sharpening */}
         {goalCheck && !goalAccepted && (
-          <div style={{ background: COLORS.amberLight, border: `1px solid ${COLORS.amber}`, borderRadius: 14, padding: "24px 28px", marginBottom: 24 }}>
+          <div style={{ background: COLORS.amberLight, borderRadius: 10, padding: "24px 28px", marginBottom: 24 }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
-              <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>⚠️</div>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>Your goal needs sharpening</p>
-                <p style={{ fontSize: 13, color: COLORS.text, margin: 0, fontFamily: "sans-serif", lineHeight: 1.6 }}>{goalCheck.reason}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy, margin: "0 0 4px", fontFamily: FONT.sans }}>Your goal needs sharpening</p>
+                <p style={{ fontSize: 13, color: COLORS.text, margin: 0, fontFamily: FONT.sans, lineHeight: 1.6 }}>{goalCheck.reason}</p>
               </div>
             </div>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 6, fontFamily: "sans-serif" }}>Suggested rewrite — edit if needed:</label>
-              <textarea value={sharpenedGoal} onChange={e => setSharpenedGoal(e.target.value)} rows={4} style={{ width: "100%", padding: "10px 14px", border: `1.5px solid ${COLORS.amber}`, borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, color: COLORS.text, fontFamily: "Georgia, serif", boxSizing: "border-box", background: COLORS.white, outline: "none", resize: "vertical" }} />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: COLORS.navy, marginBottom: 8, fontFamily: FONT.sans }}>Suggested rewrite. Edit it if you need to.</label>
+              <textarea value={sharpenedGoal} onChange={e => setSharpenedGoal(e.target.value)} rows={4} style={{ width: "100%", padding: "12px 16px", border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 15, lineHeight: 1.6, color: COLORS.text, fontFamily: FONT.sans, boxSizing: "border-box", background: COLORS.white, resize: "vertical" }} />
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button onClick={() => { setGoalAccepted(true); runGenerate(sharpenedGoal); }} style={{ padding: "10px 20px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "sans-serif" }}>Use this — generate guide</button>
-              <button onClick={() => { setGoalCheck(null); setGoalAccepted(true); setSharpenedGoal(form.taskDescription); runGenerate(form.taskDescription); }} style={{ padding: "10px 20px", background: COLORS.white, color: COLORS.navy, border: `1px solid ${COLORS.border}`, borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "sans-serif" }}>Keep my original wording</button>
+              <button onClick={() => { setGoalAccepted(true); runGenerate(sharpenedGoal); }} style={{ minHeight: 44, padding: "0 24px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: FONT.sans }}>Use this and generate the guide</button>
+              <button onClick={() => { setGoalCheck(null); setGoalAccepted(true); setSharpenedGoal(form.taskDescription); runGenerate(form.taskDescription); }} style={{ minHeight: 44, padding: "0 24px", background: COLORS.white, color: COLORS.navy, border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: FONT.sans }}>Keep my original wording</button>
             </div>
           </div>
         )}
@@ -1007,18 +1018,18 @@ CRITICAL FORMATTING RULES — no exceptions:
         {result && (
           <div ref={resultsRef}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: COLORS.navy, margin: 0, fontFamily: "sans-serif" }}>Your delegation guide</h2>
+              <h2 style={{ fontSize: 28, fontWeight: 600, letterSpacing: "-0.02em", color: COLORS.navy, margin: 0, fontFamily: FONT.sans }}>Your delegation guide</h2>
               <Badge color="green">Ready to use</Badge>
             </div>
             <LevelMeter level={result.delegationLevel} />
             {result.cadence && <CadenceCard cadence={result.cadence} taskTitle={result.taskTitle} delegateeName={result.delegateeName} managerName={result.managerName} />}
             <OutputBox title="Advice for the delegator" content={result.delegationAdvice} badge={{ color: "blue", label: "Manager only" }} />
-            <OutputBox title={`Briefing note for ${result.delegateeName}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} />
-            <div style={{ background: COLORS.slateLight, borderRadius: 10, padding: "14px 18px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-              <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
+            <OutputBox title={`Briefing note for ${result.delegateeName}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} spoken />
+            <div style={{ background: COLORS.white, borderRadius: 10, padding: "16px 20px", border: `1px solid ${COLORS.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+              <p style={{ fontSize: 14, color: COLORS.navyMid, margin: 0, fontFamily: FONT.sans }}>Both outputs are editable. Adjust to fit your voice before sharing.</p>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 {person && (
-                  <button onClick={saveToPerson} disabled={saveState !== "idle"} style={{ fontSize: 13, padding: "7px 16px", background: saveState === "saved" ? COLORS.greenLight : COLORS.navy, border: saveState === "saved" ? `1px solid ${COLORS.green}` : "none", borderRadius: 8, color: saveState === "saved" ? COLORS.green : COLORS.white, cursor: saveState === "idle" ? "pointer" : "default", fontFamily: "sans-serif", fontWeight: 600 }}>
+                  <button onClick={saveToPerson} disabled={saveState !== "idle"} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: saveState === "saved" ? COLORS.greenLight : COLORS.navy, border: saveState === "saved" ? `1px solid ${COLORS.green}` : "none", borderRadius: 10, color: saveState === "saved" ? COLORS.green : COLORS.white, cursor: saveState === "idle" ? "pointer" : "default", fontFamily: FONT.sans, fontWeight: 600 }}>
                     {saveState === "saved"
                       ? `Saved to ${person.first_name}'s record`
                       : saveState === "saving"
@@ -1026,10 +1037,10 @@ CRITICAL FORMATTING RULES — no exceptions:
                         : `Save to ${person.first_name}'s record`}
                   </button>
                 )}
-                <button onClick={downloadPdf} disabled={downloadingPdf} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.teal, border: "none", borderRadius: 8, color: COLORS.white, cursor: downloadingPdf ? "default" : "pointer", fontFamily: "sans-serif", fontWeight: 600, opacity: downloadingPdf ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}>
+                <button onClick={downloadPdf} disabled={downloadingPdf} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, color: COLORS.navy, cursor: downloadingPdf ? "default" : "pointer", fontFamily: FONT.sans, fontWeight: 600, opacity: downloadingPdf ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7 }}>
                   {downloadingPdf ? "Preparing PDF..." : (isPro ? "Download PDF" : "Download PDF (Pro)")}
                 </button>
-                <button onClick={resetAll} style={{ fontSize: 13, padding: "7px 16px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 8, color: COLORS.navy, cursor: "pointer", fontFamily: "sans-serif", fontWeight: 500 }}>New delegation</button>
+                <button onClick={resetAll} style={{ fontSize: 14, minHeight: 44, padding: "0 20px", background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, color: COLORS.navy, cursor: "pointer", fontFamily: FONT.sans, fontWeight: 500 }}>New delegation</button>
               </div>
             </div>
           </div>
@@ -1038,13 +1049,13 @@ CRITICAL FORMATTING RULES — no exceptions:
         {/* How it works */}
         {!result && !loading && (
           <div style={{ marginTop: 8 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 16px", fontFamily: "sans-serif" }}>How it works</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted, letterSpacing: "0.01em", margin: "0 0 16px", fontFamily: FONT.sans }}>How it works</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
               {[{ n: "1", title: "Describe the task", desc: "Tell us what you're delegating and to whom." }, { n: "2", title: "Profile the person", desc: "Skill level and confidence shape the right approach." }, { n: "3", title: "Get your guide", desc: "Receive a delegation plan and a ready briefing note." }].map(s => (
-                <div key={s.n} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "16px 18px" }}>
-                  <div style={{ width: 28, height: 28, background: COLORS.navy, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10, fontFamily: "sans-serif" }}>{s.n}</div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, margin: "0 0 4px", fontFamily: "sans-serif" }}>{s.title}</p>
-                  <p style={{ fontSize: 12.5, color: COLORS.muted, margin: 0, lineHeight: 1.5, fontFamily: "sans-serif" }}>{s.desc}</p>
+                <div key={s.n} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "20px 22px" }}>
+                  <div style={{ fontSize: 20, fontWeight: 600, color: COLORS.teal, marginBottom: 8, fontFamily: FONT.sans }}>{s.n}</div>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: COLORS.navy, margin: "0 0 4px", fontFamily: FONT.sans }}>{s.title}</p>
+                  <p style={{ fontSize: 14, color: COLORS.navyMid, margin: 0, lineHeight: "20px", fontFamily: FONT.sans }}>{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -1053,10 +1064,10 @@ CRITICAL FORMATTING RULES — no exceptions:
 
         {/* Footer */}
         <div style={{ borderTop: `1px solid ${COLORS.border}`, marginTop: 40, paddingTop: 20, textAlign: "center" }}>
-          <p style={{ fontSize: 12, color: COLORS.muted, margin: 0, fontFamily: "sans-serif" }}>
-            DelegateIgnite by <a href="#" style={{ color: COLORS.blue, textDecoration: "none" }}>The Message Business</a>
-            {!isPro && <> · {remaining} free {remaining === 1 ? "use" : "uses"} remaining · <span style={{ textDecoration: "underline", cursor: "pointer", color: COLORS.blue }} onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }}>Upgrade to Pro</span></>}
-            {isPro && <> · <span style={{ color: COLORS.green, fontWeight: 600 }}>Pro — unlimited access</span></>}
+          <p style={{ fontSize: 13, color: COLORS.muted, margin: 0, fontFamily: FONT.sans }}>
+            Delegate Ignite, part of <a href="https://management-ignition.com" style={{ color: COLORS.navyMid, textUnderlineOffset: 4 }}>Management Ignition</a>
+            {!isPro && <> · {remaining} free {remaining === 1 ? "use" : "uses"} remaining · <span style={{ textDecoration: "underline", textUnderlineOffset: 4, cursor: "pointer", color: COLORS.navyMid }} onClick={() => { setUpgradeTrigger("manual"); setShowUpgrade(true); }}>Upgrade to Pro</span></>}
+            {isPro && <> · <span style={{ color: COLORS.green, fontWeight: 600 }}>Pro, unlimited access</span></>}
           </p>
         </div>
       </div>
