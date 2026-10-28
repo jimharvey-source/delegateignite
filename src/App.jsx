@@ -24,6 +24,7 @@ import {
   loadSourceSession,
   carriedFrom,
   fromLine,
+  threadIdFromUrl,
 } from "./mi-session.js";
 
 const supabase = createSuiteClient({
@@ -262,6 +263,53 @@ function CadenceCard({ cadence, taskTitle, delegateeName, managerName }) {
       </div>
       <p style={{ fontSize: 13, color: COLORS.text, lineHeight: 1.6, margin: "0 0 8px", fontFamily: FONT.sans }}><strong>Format:</strong> {cadence.format}</p>
       <p style={{ fontSize: 13, color: COLORS.navyMid, lineHeight: 1.6, margin: 0, fontFamily: FONT.sans }}>{cadence.rationale}</p>
+    </div>
+  );
+}
+
+// ── The notices (chain step 5) ───────────────────────────────────────────────
+// Two contradictions the record can see, said once, under the level, in Jim's
+// approved words. The model composes none of this. A choice is saved with the
+// session and counted nowhere.
+const NOTICE_LEVEL_SENTENCE = {
+  1: (n) => `Level 1 means ${n} does exactly what you say.`,
+  2: (n) => `Level 2 means ${n} looks into it and you decide.`,
+  3: () => "Level 3 means you decide together.",
+  4: (n) => `Level 4 means ${n} tells you what help they need, then you decide together.`,
+};
+function stretchNoticeWords(first, level) {
+  return `You set ${first} a stretch goal. ${NOTICE_LEVEL_SENTENCE[level](first)} The goal needs to give ${first} the responsibility to decide, or to recommend to you.`;
+}
+const NEGLECT_WORDS = "Low challenge with high support is comfortable. It's also a slow form of neglect: you're taking good care of someone while doing nothing to help them get better.";
+
+function Notice({ notice, onKeep, onChange }) {
+  return (
+    <div role="note" style={{ background: COLORS.tealLight || "#e9f3f3", borderRadius: 10, padding: "16px 20px", margin: "-8px 0 20px", fontFamily: FONT.sans }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: COLORS.navy, margin: 0 }}>
+        {notice.text}
+        {notice.source && <span style={{ color: COLORS.navyMid }}> From <em>{notice.source}</em>.</span>}
+      </p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+        <button onClick={onChange} style={{ minHeight: 40, padding: "0 18px", background: COLORS.navy, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: FONT.sans }}>Change the level</button>
+        <button onClick={onKeep} style={{ minHeight: 40, padding: "0 18px", background: COLORS.white, color: COLORS.navy, border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: FONT.sans }}>Keep it</button>
+      </div>
+    </div>
+  );
+}
+
+function LevelPicker({ current, onPick, onCancel }) {
+  return (
+    <div style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "16px 20px", fontFamily: FONT.sans }}>
+      <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted, margin: "0 0 4px" }}>Choose the level</p>
+      <p style={{ fontSize: 14, lineHeight: "20px", color: COLORS.navyMid, margin: "0 0 12px" }}>Your notes and the briefing note are written again at the level you choose.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 8 }}>
+        {LEVEL_DESCRIPTIONS.map((l) => (
+          <button key={l.level} onClick={() => onPick(l.level)} aria-pressed={l.level === current} style={{ textAlign: "left", minHeight: 44, padding: "8px 14px", border: `1px solid ${l.level === current ? COLORS.navy : COLORS.border}`, boxShadow: l.level === current ? `inset 0 0 0 1px ${COLORS.navy}` : "none", borderRadius: 10, background: l.level === current ? COLORS.sunk : COLORS.white, color: COLORS.navy, fontSize: 14, fontWeight: l.level === current ? 600 : 400, cursor: "pointer", fontFamily: FONT.sans }}>
+            {l.level}: {l.label}
+          </button>
+        ))}
+      </div>
+      <button onClick={onCancel} style={{ marginTop: 12, background: "none", border: "none", padding: 0, color: COLORS.navyMid, fontSize: 14, textDecoration: "underline", textUnderlineOffset: 4, cursor: "pointer", fontFamily: FONT.sans }}>Cancel</button>
     </div>
   );
 }
@@ -518,6 +566,10 @@ export default function DelegateIgnite() {
   // What the last tool handed over, shown exactly as the manager wrote it.
   const [carried, setCarried] = useState(null);
   const [carryError, setCarryError] = useState("");
+  // Notices shown on this page, with the manager's answer, saved with the session.
+  const [notices, setNotices] = useState([]);
+  const [noticeOpen, setNoticeOpen] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
   // Started in the tool rather than from the app: is this person already on the team?
   const [teamMatch, setTeamMatch] = useState(null);
   const [addedPerson, setAddedPerson] = useState(null);
@@ -661,7 +713,7 @@ SHARPENED: [If FAIL, rewrite the task description as a specific, outcome-focused
 `;;
   }
 
-  const buildPrompt = (descriptionToUse) => {
+  const buildPrompt = (descriptionToUse, fixedLevel = null) => {
     const capitaliseName = (name) => name.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     const managerNameCapped = capitaliseName(form.managerName);
     const delegateeNameCapped = capitaliseName(form.delegateeName);
@@ -710,7 +762,9 @@ RULES FOR LEVEL SELECTION:
 - Low skill or low confidence = lower level (more structure and support)
 - High skill + high confidence = higher level (more autonomy)
 - Balance task risk with development opportunity
-
+${fixedLevel ? `
+THE MANAGER HAS CHOSEN LEVEL ${fixedLevel}. Write DELEGATION_LEVEL: ${fixedLevel}. Write the advice and the briefing note for level ${fixedLevel}. LEVEL_REASON says why level ${fixedLevel} can suit this task and this person, using only what was given.
+` : ""}
 9-STEP DELEGATION PROCESS:
 1. Define the task
 2. Select the individual or team
@@ -818,14 +872,26 @@ CRITICAL FORMATTING RULES: no exceptions:
     await runGenerate(sharpenedGoal || form.taskDescription);
   };
 
-  const runGenerate = async (descriptionToUse) => {
+  const runGenerate = async (descriptionToUse, fixedLevel = null) => {
     setLoading(true);
     setResult(null);
     try {
-      const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt(descriptionToUse) }] }) });
+      const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: buildPrompt(descriptionToUse, fixedLevel) }] }) });
       const data = await response.json();
       const text = data.choices?.[0]?.message?.content || "";
       const levelMatch = text.match(/DELEGATION_LEVEL:\s*(\d+)/i);
+      // The level is the fact everything else rests on. Never guess it.
+      const levelReturned = levelMatch ? Number(levelMatch[1]) : NaN;
+      if (!(levelReturned >= 1 && levelReturned <= 10)) {
+        console.error("DELEGATION_LEVEL missing or out of range in the model reply:", levelMatch?.[1]);
+        setError("The delegation level could not be read from the reply. Please generate again.");
+        return;
+      }
+      if (fixedLevel && levelReturned !== fixedLevel) {
+        console.error(`Level ${fixedLevel} was chosen and the reply came back at level ${levelReturned}.`);
+        setError(`The guide came back written for level ${levelReturned}, not level ${fixedLevel}. Please choose the level again.`);
+        return;
+      }
       const reasonMatch = text.match(/LEVEL_REASON:\s*(.+)/i);
       const levelReason = (reasonMatch?.[1] || "").replace(/^\[|\]$/g, "").trim();
       if (!levelReason) console.warn("LEVEL_REASON missing from the model reply; the level shows without its reason.");
@@ -843,7 +909,8 @@ CRITICAL FORMATTING RULES: no exceptions:
       } else { delegationAdvice = text.trim(); }
 
       const parsed = {
-        delegationLevel: levelMatch?.[1] || "5",
+        delegationLevel: String(levelReturned),
+        levelChosenBy: fixedLevel ? "manager" : "recommended",
         levelReason,
         delegationAdvice: delegationAdvice || text,
         briefingNote,
@@ -879,7 +946,7 @@ CRITICAL FORMATTING RULES: no exceptions:
     finally { setLoading(false); }
   };
 
-  const resetAll = () => { setSaveState("idle"); setSavedSession(null); clearChainFromUrl(); setAddedPerson(null); setGoalCheck(null); setSharpenedGoal(""); setGoalAccepted(false); setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const resetAll = () => { setSaveState("idle"); setSavedSession(null); clearChainFromUrl(); setNotices([]); setNoticeOpen(null); setShowPicker(false); setAddedPerson(null); setGoalCheck(null); setSharpenedGoal(""); setGoalAccepted(false); setResult(null); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   useEffect(() => {
     if (!result || !user || person) { setTeamMatch(null); return; }
@@ -921,6 +988,8 @@ CRITICAL FORMATTING RULES: no exceptions:
         delegationAdvice: result.delegationAdvice,
         briefingNote: result.briefingNote,
         cadence: result.cadence,
+        levelChosenBy: result.levelChosenBy || "recommended",
+        notices,
       },
     });
 
@@ -932,6 +1001,66 @@ CRITICAL FORMATTING RULES: no exceptions:
     setSavedSession(savedRow);
     setSaveState("saved");
     return { session: savedRow, person: target };
+  };
+
+  // The notices. Each reads the record and fires at most once: the first per
+  // thread, the second per person every 90 days. A failed read is logged.
+  useEffect(() => {
+    if (!result || !user) { setNoticeOpen(null); return; }
+    const level = Number(result.delegationLevel);
+    const target = person || teamMatch;
+    const first = target?.first_name || splitName(result?.delegateeName || form.delegateeName)?.first_name || "they";
+    let cancelled = false;
+    (async () => {
+      const threadId = carried?.from?.thread_id || threadIdFromUrl();
+      if (threadId && level <= 4 && !notices.some((n) => n.kind === "stretch_goal")) {
+        const { data, error: readError } = await supabase.schema("app").from("sessions")
+          .select("tool, person_id, inputs, outputs").eq("thread_id", threadId);
+        if (readError) {
+          console.error("Stretch-goal notice: the thread could not be read:", readError.message);
+        } else if (!cancelled) {
+          const stretchGoal = (data || []).some((x) => x.tool === "goal" && x.inputs?.stretchLevel === "High"
+            && (!target || !x.person_id || x.person_id === target.id));
+          const shownBefore = (data || []).some((x) => x.tool === "delegate" && (x.outputs?.notices || []).some((n) => n.kind === "stretch_goal"));
+          if (stretchGoal && !shownBefore) {
+            setNoticeOpen({ kind: "stretch_goal", text: stretchNoticeWords(first, level) });
+            setNotices((prev) => [...prev, { kind: "stretch_goal", level, choice: null, at: new Date().toISOString() }]);
+            return;
+          }
+        }
+      }
+      if (target?.id && level <= 3 && form.skillLevel === "High" && form.confidenceLevel === "High"
+          && !notices.some((n) => n.kind === "comfortable_neglect")) {
+        const { data, error: readError } = await supabase.schema("app").from("sessions")
+          .select("occurred_at, outputs").eq("person_id", target.id).eq("tool", "delegate");
+        if (readError) {
+          console.error("Comfortable-neglect notice: past delegations could not be read:", readError.message);
+        } else if (!cancelled) {
+          const lowBefore = (data || []).filter((x) => Number(x.outputs?.delegationLevel) <= 3).length;
+          const since = Date.now() - 90 * 86400000;
+          const shownRecently = (data || []).some((x) => new Date(x.occurred_at).getTime() >= since
+            && (x.outputs?.notices || []).some((n) => n.kind === "comfortable_neglect"));
+          // This delegation would be the fifth at level 3 or below.
+          if (lowBefore >= 4 && !shownRecently) {
+            setNoticeOpen({ kind: "comfortable_neglect", text: NEGLECT_WORDS, source: "The Art of Letting Go" });
+            setNotices((prev) => [...prev, { kind: "comfortable_neglect", level, choice: null, at: new Date().toISOString() }]);
+          }
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [result, user, person, teamMatch]);
+
+  const answerNotice = (choice) => {
+    const kind = noticeOpen?.kind;
+    setNotices((prev) => prev.map((n) => (n.kind === kind && n.choice === null ? { ...n, choice } : n)));
+    setNoticeOpen(null);
+    if (choice === "changed") setShowPicker(true);
+  };
+
+  const pickLevel = (level) => {
+    setShowPicker(false);
+    runGenerate(sharpenedGoal || form.taskDescription, level);
   };
 
   // A new result is a new piece of work until it is saved.
@@ -1146,6 +1275,12 @@ CRITICAL FORMATTING RULES: no exceptions:
               <Badge color="green">Ready to use</Badge>
             </div>
             <LevelMeter level={result.delegationLevel} reason={result.levelReason} />
+            {noticeOpen && <Notice notice={noticeOpen} onKeep={() => answerNotice("kept")} onChange={() => answerNotice("changed")} />}
+            <div style={{ margin: "-8px 0 20px" }}>
+              {showPicker
+                ? <LevelPicker current={Number(result.delegationLevel)} onPick={pickLevel} onCancel={() => setShowPicker(false)} />
+                : <button onClick={() => setShowPicker(true)} style={{ background: "none", border: "none", padding: 0, color: COLORS.navyMid, fontSize: 14, textDecoration: "underline", textUnderlineOffset: 4, cursor: "pointer", fontFamily: FONT.sans }}>Change the level</button>}
+            </div>
             {result.cadence && <CadenceCard cadence={result.cadence} taskTitle={result.taskTitle} delegateeName={result.delegateeName} managerName={result.managerName} />}
             <OutputBox title="Advice for the delegator" content={result.delegationAdvice} badge={{ color: "blue", label: "Manager only" }} />
             <OutputBox title={`Briefing note for ${displayName(result.delegateeName)}`} content={result.briefingNote} badge={{ color: "teal", label: "Share with delegatee" }} spoken />
