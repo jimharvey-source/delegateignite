@@ -20,6 +20,10 @@ import {
   splitName,
   openNextTool,
   clearChainFromUrl,
+  sourceSessionIdFromUrl,
+  loadSourceSession,
+  carriedFrom,
+  fromLine,
 } from "./mi-session.js";
 
 const supabase = createSuiteClient({
@@ -511,6 +515,9 @@ export default function DelegateIgnite() {
   // The saved session, kept so the hand-over never saves twice.
   const [savedSession, setSavedSession] = useState(null);
   const [handOverState, setHandOverState] = useState("idle");
+  // What the last tool handed over, shown exactly as the manager wrote it.
+  const [carried, setCarried] = useState(null);
+  const [carryError, setCarryError] = useState("");
   // Started in the tool rather than from the app: is this person already on the team?
   const [teamMatch, setTeamMatch] = useState(null);
   const [addedPerson, setAddedPerson] = useState(null);
@@ -545,6 +552,20 @@ export default function DelegateIgnite() {
     (async () => {
       const paid = await hasSuiteAccess(supabase);
       if (!cancelled && paid) setIsPro(true);
+
+      // A hand-over: load the session it came from and carry what was decided.
+      const fromId = sourceSessionIdFromUrl();
+      if (fromId) {
+        const { session: src, error: srcError } = await loadSourceSession(supabase, fromId);
+        if (cancelled) return;
+        if (srcError || !src) {
+          setCarryError("The work this came from could not be loaded, so nothing was carried over.");
+        } else {
+          const c = carriedFrom(src);
+          setCarried({ ...c, from: src });
+          setForm(prev => ({ ...prev, skillLevel: prev.skillLevel || c.skill, confidenceLevel: prev.confidenceLevel || c.confidence }));
+        }
+      }
 
       const p = await loadPerson(supabase, personIdFromUrl());
       if (cancelled || !p) return;
@@ -1023,6 +1044,22 @@ CRITICAL FORMATTING RULES: no exceptions:
         {/* Form card */}
         <div style={{ background: COLORS.white, borderRadius: 22, boxShadow: SHADOW, padding: "clamp(24px, 5vw, 48px)", marginBottom: 32 }}>
           <h2 style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em", color: COLORS.navy, margin: "0 0 24px", fontFamily: FONT.sans }}>The delegation</h2>
+          {carryError && (
+            <p role="alert" style={{ fontSize: 14, lineHeight: "20px", color: COLORS.navy, background: "#fff3e0", borderRadius: 10, padding: "10px 14px", margin: "0 0 20px", fontFamily: FONT.sans }}>{carryError}</p>
+          )}
+          {carried && (
+            <div style={{ background: "#eef2f6", borderRadius: 10, padding: "14px 18px", margin: "0 0 24px", fontFamily: FONT.sans }}>
+              {carried.from.person_id
+                ? <a href={personRecordUrl(carried.from.person_id)} style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy, textUnderlineOffset: 4 }}>{fromLine(carried.from, person?.first_name)}</a>
+                : <span style={{ fontSize: 13, fontWeight: 600, color: COLORS.navy }}>{fromLine(carried.from, person?.first_name)}</span>}
+              {carried.items.map(([k, v]) => (
+                <div key={k} style={{ marginTop: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.muted }}>{k}</div>
+                  <div style={{ fontSize: 14, lineHeight: "20px", color: COLORS.navyMid, whiteSpace: "pre-wrap" }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0 20px" }}>
             <TextField label="Manager name" value={form.managerName} onChange={f("managerName")} placeholder="Your name" required />
             <TextField label="Delegatee name" value={form.delegateeName} onChange={f("delegateeName")} placeholder="Their name" required />
@@ -1040,8 +1077,8 @@ CRITICAL FORMATTING RULES: no exceptions:
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
             <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.navy, margin: "0 0 16px", fontFamily: FONT.sans }}>About {form.delegateeName || "the delegatee"}</h3>
-            <ToggleGroup label="Skill level for this type of task" value={form.skillLevel} onChange={f("skillLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
-            <ToggleGroup label="Confidence level" value={form.confidenceLevel} onChange={f("confidenceLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
+            <ToggleGroup label={"Skill level for this type of task" + (carried?.skill ? ` (from the ${carried.noun}: still true?)` : "")} value={form.skillLevel} onChange={f("skillLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
+            <ToggleGroup label={"Confidence level" + (carried?.confidence ? ` (from the ${carried.noun}: still true?)` : "")} value={form.confidenceLevel} onChange={f("confidenceLevel")} options={[{ value: "Low", label: "Low" }, { value: "Medium", label: "Medium" }, { value: "High", label: "High" }]} />
           </div>
 
           <div style={{ borderTop: `1px solid ${COLORS.border}`, paddingTop: 20, marginTop: 4 }}>
