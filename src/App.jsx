@@ -787,7 +787,7 @@ DELEGATION_ADVICE:
 [Write detailed, practical guidance for ${managerNameCapped}. Structure it as follows:
 
 OPENING (write this exactly, substituting the names):
-"This guide will help you delegate this important task to [DELEGATEE NAME], ensuring that your first 1-1 meeting helps you build confidence: for an important project: with a valued member of your team. Use this structure as support for your face-to-face discussion with [DELEGATEE NAME]. The note below is an outline for a briefing note, or conversation guide, for you to share with [DELEGATEE NAME]. You can add to it and edit it in any way before you share it with them."
+"This guide will help you delegate this important task to [DELEGATEE NAME], and use your first 1-1 about it to build their confidence. Use it to prepare for your face-to-face conversation. The note below is a briefing note to share with [DELEGATEE NAME]. Add to it and edit it in any way before you share it."
 
 LEVEL AND RATIONALE (write this as a short paragraph, 3-5 sentences):
 Name the delegation level chosen and its title (e.g. "Level 4: Tell me the situation and what help you need. Then we will decide."). Explain in plain terms why this level is right for this task and this person: drawing on the task complexity, importance, and where ${delegateeNameCapped} is with this kind of work. Reference The Message Business 9-step delegation framework as the structure for the steps below. Then introduce the steps with a sentence such as: "Here are the nine steps to follow to give ${delegateeNameCapped} the best possible chance of succeeding with this task."
@@ -823,7 +823,7 @@ How I will work with you
 Explain the delegation approach clearly: the level of freedom ${delegateeNameCapped} has, what decisions are theirs to make, and what needs to come back to ${managerNameCapped}. Be explicit that ${managerNameCapped} is available if they hit resource issues or obstacles. This section should make the working relationship and boundaries feel clear and supportive, not contractual.
 
 What success looks like and what we will agree together
-Set out the specific success criteria for this task: the measurable outcomes, and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${delegateeNameCapped} can work towards them with confidence, clear on what good looks like. Mention that resourcing: budgets, contacts, access: will also be agreed in that first meeting so there are no blockers.
+Set out the specific success criteria for this task: the measurable outcomes, and make clear that these will be agreed together in the first meeting, not handed down. Include the deadline (${form.deadline || "as discussed"}). Explain that once the criteria are agreed, ${delegateeNameCapped} can work towards them with confidence, clear on what good looks like. Mention that resources, such as budget, contacts and access, will also be agreed in that first meeting so there are no blockers.
 
 The process from here
 Set out the check-in cadence from CADENCE GUIDANCE: frequency, format, and what each session is for. Ask ${delegateeNameCapped} to keep a brief log of progress, blockers, and questions to bring to each check-in. Explain that the check-ins are there to make sure they have what they need: not to monitor them.
